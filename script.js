@@ -2,6 +2,8 @@ const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search';
 const DEFAULT_LANGUAGE = 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'weather-dashboard-language';
+const THEME_STORAGE_KEY = 'weather-dashboard-theme';
+const themeColors = { midnight: '#091a38', ocean: '#0b5965', aurora: '#593e8d', sunset: '#7a3652', forest: '#1c5d4e' };
 
 const locales = {
     'zh-CN': { intl: 'zh-CN', api: 'zh' },
@@ -12,16 +14,16 @@ const locales = {
 
 const translations = {
     'zh-CN': {
-        pageTitle: '天气 — 玻璃预报', description: '由 Open-Meteo 驱动的玻璃拟态天气仪表盘。', brandHome: '天气首页', brand: '天气', languageLabel: '选择语言', searchLabel: '搜索城市', searchPlaceholder: '搜索城市', searchButton: '搜索', citySuggestions: '城市建议', currentConditions: '当前天气', loading: '正在获取天气预报…', loadingCondition: '加载中', weatherDetails: '天气详情', humidity: '湿度', wind: '风速', visibility: '能见度', pressure: '气压', feelsLike: '体感温度', uvIndex: '紫外线指数', atAGlance: '即时预报', hourlyForecast: '逐小时预报', weekAhead: '未来一周', dailyForecast: '7 天预报', localForecast: '当地预报', dataAttribution: '天气数据由 Open-Meteo 提供', now: '现在', today: '今天', rain: '降水', forecast: '预报', location: '地点', low: '低', moderate: '中等', high: '高', veryHigh: '很高', extreme: '极高', localTime: '{timezone} 当地时间', loadingForecast: '正在加载 {city} 的天气预报…', searchingCities: '正在搜索城市…', citySearchUnavailable: '暂时无法搜索城市，请稍后重试。', weatherUnavailable: '天气数据暂时不可用，请稍后重试。', unableToLoad: '暂时无法加载天气，请稍后重试。', enterTwoCharacters: '请输入至少两个字符以搜索城市。', noMatchingCity: '未找到匹配的城市，请补充国家或地区。', chooseCity: '请选择匹配的城市以查看天气预报。', unableToSearch: '暂时无法搜索城市，请稍后重试。', unitKm: ' 公里', unitKmh: ' 公里/小时', unitHpa: ' 百帕', unitMm: ' 毫米'
+        pageTitle: '天气 — 玻璃预报', description: '由 Open-Meteo 驱动的玻璃拟态天气仪表盘。', brandHome: '天气首页', brand: '天气', languageLabel: '选择语言', themeLabel: '选择主题色', themeMidnight: '午夜蓝', themeOcean: '深海青', themeAurora: '极光紫', themeSunset: '落日暖橙', themeForest: '森林绿', searchLabel: '搜索城市', searchPlaceholder: '搜索城市', searchButton: '搜索', citySuggestions: '城市建议', currentConditions: '当前天气', loading: '正在获取天气预报…', loadingCondition: '加载中', weatherDetails: '天气详情', humidity: '湿度', wind: '风速', visibility: '能见度', pressure: '气压', feelsLike: '体感温度', uvIndex: '紫外线指数', atAGlance: '即时预报', hourlyForecast: '逐小时预报', weekAhead: '未来一周', dailyForecast: '7 天预报', localForecast: '当地预报', dataAttribution: '天气数据由 Open-Meteo 提供', now: '现在', today: '今天', rain: '降水', forecast: '预报', location: '地点', low: '低', moderate: '中等', high: '高', veryHigh: '很高', extreme: '极高', localTime: '{timezone} 当地时间', loadingForecast: '正在加载 {city} 的天气预报…', searchingCities: '正在搜索城市…', citySearchUnavailable: '暂时无法搜索城市，请稍后重试。', weatherUnavailable: '天气数据暂时不可用，请稍后重试。', unableToLoad: '暂时无法加载天气，请稍后重试。', enterTwoCharacters: '请输入至少两个字符以搜索城市。', noMatchingCity: '未找到匹配的城市，请补充国家或地区。', chooseCity: '请选择匹配的城市以查看天气预报。', unableToSearch: '暂时无法搜索城市，请稍后重试。', unitKm: ' 公里', unitKmh: ' 公里/小时', unitHpa: ' 百帕', unitMm: ' 毫米'
     },
     en: {
-        pageTitle: 'Weather — Glass Forecast', description: 'A glassmorphism weather dashboard powered by Open-Meteo.', brandHome: 'Weather home', brand: 'Weather', languageLabel: 'Select language', searchLabel: 'Search for a city', searchPlaceholder: 'Search a city', searchButton: 'Search', citySuggestions: 'City suggestions', currentConditions: 'Current conditions', loading: 'Finding your forecast…', loadingCondition: 'Loading', weatherDetails: 'Weather details', humidity: 'Humidity', wind: 'Wind', visibility: 'Visibility', pressure: 'Pressure', feelsLike: 'Feels like', uvIndex: 'UV index', atAGlance: 'At a glance', hourlyForecast: 'Hourly forecast', weekAhead: 'Week ahead', dailyForecast: '7-day forecast', localForecast: 'Local forecast', dataAttribution: 'Weather data by Open-Meteo', now: 'Now', today: 'Today', rain: 'rain', forecast: 'Forecast', location: 'Location', low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high', extreme: 'Extreme', localTime: '{timezone} time', loadingForecast: "Loading {city}'s forecast…", searchingCities: 'Searching for cities…', citySearchUnavailable: 'City search is currently unavailable. Please try again.', weatherUnavailable: 'Weather data is temporarily unavailable. Please try again.', unableToLoad: 'Unable to load the weather right now.', enterTwoCharacters: 'Enter at least two characters to search for a city.', noMatchingCity: 'No matching city was found. Try adding a country or region.', chooseCity: 'Choose the matching city to view its forecast.', unableToSearch: 'Unable to search for a city.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: 'Weather — Glass Forecast', description: 'A glassmorphism weather dashboard powered by Open-Meteo.', brandHome: 'Weather home', brand: 'Weather', languageLabel: 'Select language', themeLabel: 'Select colour theme', themeMidnight: 'Midnight blue', themeOcean: 'Ocean teal', themeAurora: 'Aurora violet', themeSunset: 'Sunset amber', themeForest: 'Forest green', searchLabel: 'Search for a city', searchPlaceholder: 'Search a city', searchButton: 'Search', citySuggestions: 'City suggestions', currentConditions: 'Current conditions', loading: 'Finding your forecast…', loadingCondition: 'Loading', weatherDetails: 'Weather details', humidity: 'Humidity', wind: 'Wind', visibility: 'Visibility', pressure: 'Pressure', feelsLike: 'Feels like', uvIndex: 'UV index', atAGlance: 'At a glance', hourlyForecast: 'Hourly forecast', weekAhead: 'Week ahead', dailyForecast: '7-day forecast', localForecast: 'Local forecast', dataAttribution: 'Weather data by Open-Meteo', now: 'Now', today: 'Today', rain: 'rain', forecast: 'Forecast', location: 'Location', low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high', extreme: 'Extreme', localTime: '{timezone} time', loadingForecast: "Loading {city}'s forecast…", searchingCities: 'Searching for cities…', citySearchUnavailable: 'City search is currently unavailable. Please try again.', weatherUnavailable: 'Weather data is temporarily unavailable. Please try again.', unableToLoad: 'Unable to load the weather right now.', enterTwoCharacters: 'Enter at least two characters to search for a city.', noMatchingCity: 'No matching city was found. Try adding a country or region.', chooseCity: 'Choose the matching city to view its forecast.', unableToSearch: 'Unable to search for a city.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     },
     ja: {
-        pageTitle: '天気 — グラス予報', description: 'Open-Meteo を使用したグラスモーフィズムの天気ダッシュボードです。', brandHome: '天気ホーム', brand: '天気', languageLabel: '言語を選択', searchLabel: '都市を検索', searchPlaceholder: '都市を検索', searchButton: '検索', citySuggestions: '都市の候補', currentConditions: '現在の天気', loading: '天気予報を取得中…', loadingCondition: '読み込み中', weatherDetails: '天気の詳細', humidity: '湿度', wind: '風速', visibility: '視程', pressure: '気圧', feelsLike: '体感温度', uvIndex: 'UV 指数', atAGlance: '現在の予報', hourlyForecast: '時間ごとの予報', weekAhead: '今後一週間', dailyForecast: '7 日間予報', localForecast: '現地の予報', dataAttribution: '天気データ: Open-Meteo', now: '現在', today: '今日', rain: '降水', forecast: '予報', location: '場所', low: '低い', moderate: '中程度', high: '高い', veryHigh: '非常に高い', extreme: '極端に高い', localTime: '{timezone} 現地時刻', loadingForecast: '{city} の天気予報を読み込み中…', searchingCities: '都市を検索中…', citySearchUnavailable: '都市検索は現在利用できません。もう一度お試しください。', weatherUnavailable: '天気データは一時的に利用できません。もう一度お試しください。', unableToLoad: '現在、天気を読み込めません。もう一度お試しください。', enterTwoCharacters: '都市を検索するには 2 文字以上入力してください。', noMatchingCity: '該当する都市が見つかりません。国または地域を追加してください。', chooseCity: '予報を確認する都市を選択してください。', unableToSearch: '現在、都市を検索できません。もう一度お試しください。', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: '天気 — グラス予報', description: 'Open-Meteo を使用したグラスモーフィズムの天気ダッシュボードです。', brandHome: '天気ホーム', brand: '天気', languageLabel: '言語を選択', themeLabel: 'テーマカラーを選択', themeMidnight: 'ミッドナイトブルー', themeOcean: 'オーシャンティール', themeAurora: 'オーロラバイオレット', themeSunset: 'サンセットアンバー', themeForest: 'フォレストグリーン', searchLabel: '都市を検索', searchPlaceholder: '都市を検索', searchButton: '検索', citySuggestions: '都市の候補', currentConditions: '現在の天気', loading: '天気予報を取得中…', loadingCondition: '読み込み中', weatherDetails: '天気の詳細', humidity: '湿度', wind: '風速', visibility: '視程', pressure: '気圧', feelsLike: '体感温度', uvIndex: 'UV 指数', atAGlance: '現在の予報', hourlyForecast: '時間ごとの予報', weekAhead: '今後一週間', dailyForecast: '7 日間予報', localForecast: '現地の予報', dataAttribution: '天気データ: Open-Meteo', now: '現在', today: '今日', rain: '降水', forecast: '予報', location: '場所', low: '低い', moderate: '中程度', high: '高い', veryHigh: '非常に高い', extreme: '極端に高い', localTime: '{timezone} 現地時刻', loadingForecast: '{city} の天気予報を読み込み中…', searchingCities: '都市を検索中…', citySearchUnavailable: '都市検索は現在利用できません。もう一度お試しください。', weatherUnavailable: '天気データは一時的に利用できません。もう一度お試しください。', unableToLoad: '現在、天気を読み込めません。もう一度お試しください。', enterTwoCharacters: '都市を検索するには 2 文字以上入力してください。', noMatchingCity: '該当する都市が見つかりません。国または地域を追加してください。', chooseCity: '予報を確認する都市を選択してください。', unableToSearch: '現在、都市を検索できません。もう一度お試しください。', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     },
     ko: {
-        pageTitle: '날씨 — 글래스 예보', description: 'Open-Meteo 기반의 글래스모피즘 날씨 대시보드입니다.', brandHome: '날씨 홈', brand: '날씨', languageLabel: '언어 선택', searchLabel: '도시 검색', searchPlaceholder: '도시 검색', searchButton: '검색', citySuggestions: '도시 추천', currentConditions: '현재 날씨', loading: '일기예보를 불러오는 중…', loadingCondition: '불러오는 중', weatherDetails: '날씨 정보', humidity: '습도', wind: '풍속', visibility: '가시거리', pressure: '기압', feelsLike: '체감온도', uvIndex: '자외선 지수', atAGlance: '한눈에 보기', hourlyForecast: '시간별 예보', weekAhead: '이번 주', dailyForecast: '7일 예보', localForecast: '현지 예보', dataAttribution: '날씨 데이터: Open-Meteo', now: '지금', today: '오늘', rain: '강수', forecast: '예보', location: '위치', low: '낮음', moderate: '보통', high: '높음', veryHigh: '매우 높음', extreme: '매우 위험', localTime: '{timezone} 현지 시간', loadingForecast: '{city}의 일기예보를 불러오는 중…', searchingCities: '도시를 검색하는 중…', citySearchUnavailable: '현재 도시 검색을 사용할 수 없습니다. 다시 시도해 주세요.', weatherUnavailable: '날씨 데이터를 일시적으로 사용할 수 없습니다. 다시 시도해 주세요.', unableToLoad: '지금은 날씨를 불러올 수 없습니다. 다시 시도해 주세요.', enterTwoCharacters: '도시를 검색하려면 두 글자 이상 입력하세요.', noMatchingCity: '일치하는 도시를 찾지 못했습니다. 국가 또는 지역을 추가해 보세요.', chooseCity: '예보를 볼 도시를 선택하세요.', unableToSearch: '지금은 도시를 검색할 수 없습니다. 다시 시도해 주세요.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: '날씨 — 글래스 예보', description: 'Open-Meteo 기반의 글래스모피즘 날씨 대시보드입니다.', brandHome: '날씨 홈', brand: '날씨', languageLabel: '언어 선택', themeLabel: '테마 색상 선택', themeMidnight: '미드나이트 블루', themeOcean: '오션 틸', themeAurora: '오로라 바이올렛', themeSunset: '선셋 앰버', themeForest: '포레스트 그린', searchLabel: '도시 검색', searchPlaceholder: '도시 검색', searchButton: '검색', citySuggestions: '도시 추천', currentConditions: '현재 날씨', loading: '일기예보를 불러오는 중…', loadingCondition: '불러오는 중', weatherDetails: '날씨 정보', humidity: '습도', wind: '풍속', visibility: '가시거리', pressure: '기압', feelsLike: '체감온도', uvIndex: '자외선 지수', atAGlance: '한눈에 보기', hourlyForecast: '시간별 예보', weekAhead: '이번 주', dailyForecast: '7일 예보', localForecast: '현지 예보', dataAttribution: '날씨 데이터: Open-Meteo', now: '지금', today: '오늘', rain: '강수', forecast: '예보', location: '위치', low: '낮음', moderate: '보통', high: '높음', veryHigh: '매우 높음', extreme: '매우 위험', localTime: '{timezone} 현지 시간', loadingForecast: '{city}의 일기예보를 불러오는 중…', searchingCities: '도시를 검색하는 중…', citySearchUnavailable: '현재 도시 검색을 사용할 수 없습니다. 다시 시도해 주세요.', weatherUnavailable: '날씨 데이터를 일시적으로 사용할 수 없습니다. 다시 시도해 주세요.', unableToLoad: '지금은 날씨를 불러올 수 없습니다. 다시 시도해 주세요.', enterTwoCharacters: '도시를 검색하려면 두 글자 이상 입력하세요.', noMatchingCity: '일치하는 도시를 찾지 못했습니다. 국가 또는 지역을 추가해 보세요.', chooseCity: '예보를 볼 도시를 선택하세요.', unableToSearch: '지금은 도시를 검색할 수 없습니다. 다시 시도해 주세요.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     }
 };
 
@@ -35,12 +37,13 @@ const weatherCodes = {
 };
 
 const elements = {
-    form: document.getElementById('searchForm'), languageSelect: document.getElementById('languageSelect'), searchInput: document.getElementById('searchInput'), searchButton: document.getElementById('searchBtn'), searchResults: document.getElementById('searchResults'), loading: document.getElementById('loading'), weatherContent: document.getElementById('weatherContent'), errorMessage: document.getElementById('errorMessage'), statusMessage: document.getElementById('statusMessage'), cityName: document.getElementById('cityName'), dateTime: document.getElementById('dateTime'), temperature: document.getElementById('temperature'), weatherDescription: document.getElementById('weatherDescription'), weatherIcon: document.getElementById('weatherIcon'), humidity: document.getElementById('humidity'), windSpeed: document.getElementById('windSpeed'), visibility: document.getElementById('visibility'), pressure: document.getElementById('pressure'), feelsLike: document.getElementById('feelsLike'), uvIndex: document.getElementById('uvIndex'), hourlyForecast: document.getElementById('hourlyForecast'), dailyForecast: document.getElementById('dailyForecast'), timezoneLabel: document.getElementById('timezoneLabel'), weatherParticles: document.getElementById('weatherParticles')
+    form: document.getElementById('searchForm'), languageSelect: document.getElementById('languageSelect'), themeSelect: document.getElementById('themeSelect'), searchInput: document.getElementById('searchInput'), searchButton: document.getElementById('searchBtn'), searchResults: document.getElementById('searchResults'), loading: document.getElementById('loading'), weatherContent: document.getElementById('weatherContent'), errorMessage: document.getElementById('errorMessage'), statusMessage: document.getElementById('statusMessage'), cityName: document.getElementById('cityName'), dateTime: document.getElementById('dateTime'), temperature: document.getElementById('temperature'), weatherDescription: document.getElementById('weatherDescription'), weatherIcon: document.getElementById('weatherIcon'), humidity: document.getElementById('humidity'), windSpeed: document.getElementById('windSpeed'), visibility: document.getElementById('visibility'), pressure: document.getElementById('pressure'), feelsLike: document.getElementById('feelsLike'), uvIndex: document.getElementById('uvIndex'), hourlyForecast: document.getElementById('hourlyForecast'), dailyForecast: document.getElementById('dailyForecast'), timezoneLabel: document.getElementById('timezoneLabel'), weatherParticles: document.getElementById('weatherParticles')
 };
 
 const weatherCache = new Map();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let currentLanguage = DEFAULT_LANGUAGE;
+let currentTheme = 'midnight';
 let currentOptions = [];
 let activeWeatherTheme = 'clear';
 let currentPlace = null;
@@ -63,6 +66,7 @@ function applyStaticTranslations() {
     document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder); });
     document.querySelectorAll('[data-i18n-aria-label]').forEach((node) => { node.setAttribute('aria-label', t(node.dataset.i18nAriaLabel)); });
     elements.languageSelect.value = currentLanguage;
+    elements.themeSelect.value = currentTheme;
     if (elements.loading.classList.contains('hidden')) return;
     elements.loading.querySelector('p').textContent = t('loading');
 }
@@ -76,6 +80,15 @@ function setLanguage(language) {
     clearError();
     clearStatus();
     if (currentPlace && currentWeatherData) renderWeather(currentPlace, currentWeatherData);
+}
+
+function setTheme(theme) {
+    if (!Object.hasOwn(themeColors, theme)) return;
+    currentTheme = theme;
+    document.body.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColors[theme]);
+    elements.themeSelect.value = theme;
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
 }
 
 function particleCount(theme) {
@@ -274,19 +287,24 @@ async function handleSearch(event) {
     } finally { setLoading(false); }
 }
 
-function initializeLanguage() {
+function initializePreferences() {
     const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
     currentLanguage = locales[savedLanguage] ? savedLanguage : DEFAULT_LANGUAGE;
+    currentTheme = Object.hasOwn(themeColors, savedTheme) ? savedTheme : 'midnight';
+    document.body.dataset.theme = currentTheme;
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColors[currentTheme]);
     applyStaticTranslations();
 }
 
 elements.form.addEventListener('submit', handleSearch);
 elements.languageSelect.addEventListener('change', (event) => setLanguage(event.target.value));
+elements.themeSelect.addEventListener('change', (event) => setTheme(event.target.value));
 elements.searchInput.addEventListener('input', () => { clearError(); clearStatus(); if (!elements.searchResults.classList.contains('hidden')) closeResults(); });
 document.addEventListener('click', (event) => { if (!elements.form.contains(event.target)) closeResults(); });
 reducedMotion.addEventListener('change', () => setWeatherAtmosphere(activeWeatherTheme));
 
 const defaultPlace = { name: 'London', admin1: 'England', country: 'United Kingdom', latitude: 51.5085, longitude: -0.1257 };
-function bootWeatherDashboard() { initializeLanguage(); loadPlace(defaultPlace); }
+function bootWeatherDashboard() { initializePreferences(); loadPlace(defaultPlace); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootWeatherDashboard, { once: true });
 else bootWeatherDashboard();

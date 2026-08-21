@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body data-weather="clear">
+<body data-weather="clear" data-theme="midnight">
     <div class="atmosphere" aria-hidden="true">
         <span class="orb orb-one"></span>
         <span class="orb orb-two"></span>
@@ -36,6 +36,18 @@
                         <option value="en">English</option>
                         <option value="ja">日本語</option>
                         <option value="ko">한국어</option>
+                    </select>
+                </div>
+
+                <div class="theme-switcher">
+                    <label class="sr-only" for="themeSelect" data-i18n="themeLabel">选择主题色</label>
+                    <i class="fa-solid fa-palette" aria-hidden="true"></i>
+                    <select id="themeSelect" aria-label="选择主题色" data-i18n-aria-label="themeLabel">
+                        <option value="midnight" data-i18n="themeMidnight">午夜蓝</option>
+                        <option value="ocean" data-i18n="themeOcean">深海青</option>
+                        <option value="aurora" data-i18n="themeAurora">极光紫</option>
+                        <option value="sunset" data-i18n="themeSunset">落日暖橙</option>
+                        <option value="forest" data-i18n="themeForest">森林绿</option>
                     </select>
                 </div>
 
@@ -144,7 +156,7 @@
         </div>
 
         <footer class="footer">
-            <span id="timezoneLabel">当地预报</span>
+            <span id="timezoneLabel" data-i18n="localForecast">当地预报</span>
             <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" data-i18n="dataAttribution">天气数据由 Open-Meteo 提供</a>
         </footer>
     </main>
