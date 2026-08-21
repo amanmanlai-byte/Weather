@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#091a38">
-    <meta name="description" content="A glassmorphism weather dashboard powered by Open-Meteo.">
-    <title>Weather — Glass Forecast</title>
+    <meta name="description" content="由 Open-Meteo 驱动的玻璃拟态天气仪表盘。">
+    <title>天气 — 玻璃预报</title>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
@@ -22,31 +22,45 @@
 
     <main class="page-shell">
         <header class="topbar">
-            <a class="brand" href="./" aria-label="Weather home">
+            <a class="brand" href="./" aria-label="天气首页" data-i18n-aria-label="brandHome">
                 <span class="brand-mark"><i class="fa-solid fa-cloud-sun"></i></span>
-                <span>Weather</span>
+                <span data-i18n="brand">天气</span>
             </a>
 
-            <form id="searchForm" class="search-form" role="search" novalidate>
-                <label class="sr-only" for="searchInput">Search for a city</label>
-                <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
-                <input
-                    id="searchInput"
-                    name="city"
-                    type="search"
-                    placeholder="Search a city"
-                    autocomplete="off"
-                    spellcheck="false"
-                    aria-autocomplete="list"
-                    aria-controls="searchResults"
-                    aria-expanded="false"
-                >
-                <button id="searchBtn" type="submit" aria-label="Search">
-                    <span>Search</span>
-                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </button>
-                <div id="searchResults" class="search-results hidden" role="listbox" aria-label="City suggestions"></div>
-            </form>
+            <div class="topbar-actions">
+                <div class="language-switcher">
+                    <label class="sr-only" for="languageSelect" data-i18n="languageLabel">选择语言</label>
+                    <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                    <select id="languageSelect" aria-label="选择语言" data-i18n-aria-label="languageLabel">
+                        <option value="zh-CN">中文</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                    </select>
+                </div>
+
+                <form id="searchForm" class="search-form" role="search" novalidate>
+                    <label class="sr-only" for="searchInput" data-i18n="searchLabel">搜索城市</label>
+                    <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                    <input
+                        id="searchInput"
+                        name="city"
+                        type="search"
+                        placeholder="搜索城市"
+                        data-i18n-placeholder="searchPlaceholder"
+                        autocomplete="off"
+                        spellcheck="false"
+                        aria-autocomplete="list"
+                        aria-controls="searchResults"
+                        aria-expanded="false"
+                    >
+                    <button id="searchBtn" type="submit" aria-label="搜索" data-i18n-aria-label="searchButton">
+                        <span data-i18n="searchButton">搜索</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                    <div id="searchResults" class="search-results hidden" role="listbox" aria-label="城市建议" data-i18n-aria-label="citySuggestions"></div>
+                </form>
+            </div>
         </header>
 
         <div id="statusMessage" class="status-message hidden" role="status" aria-live="polite"></div>
@@ -54,22 +68,22 @@
 
         <section id="loading" class="loading-state glass-panel" aria-live="polite">
             <span class="loading-ring" aria-hidden="true"></span>
-            <p>Finding your forecast…</p>
+            <p>正在获取天气预报…</p>
         </section>
 
         <div id="weatherContent" class="weather-content hidden">
             <section id="mainWeather" class="glass-panel hero-card" aria-labelledby="cityName">
                 <div class="hero-main">
                     <div class="location-copy">
-                        <p id="locationKicker" class="eyebrow">Current conditions</p>
-                        <h1 id="cityName">London, England</h1>
+                        <p id="locationKicker" class="eyebrow" data-i18n="currentConditions">当前天气</p>
+                        <h1 id="cityName">伦敦，英格兰</h1>
                         <p id="dateTime" class="date-time"></p>
                     </div>
 
                     <div class="temperature-row">
                         <div class="temperature-block">
                             <span id="temperature" class="temperature">--</span><span class="degree">°</span>
-                            <p id="weatherDescription" class="condition">Loading</p>
+                            <p id="weatherDescription" class="condition">加载中</p>
                         </div>
                         <div class="weather-art" aria-hidden="true">
                             <span class="weather-halo"></span>
@@ -78,30 +92,30 @@
                     </div>
                 </div>
 
-                <div class="metric-grid" aria-label="Weather details">
+                <div class="metric-grid" aria-label="天气详情" data-i18n-aria-label="weatherDetails">
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-solid fa-droplet" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>Humidity</span><strong id="humidity">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="humidity">湿度</span><strong id="humidity">--</strong></span>
                     </div>
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-solid fa-wind" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>Wind</span><strong id="windSpeed">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="wind">风速</span><strong id="windSpeed">--</strong></span>
                     </div>
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-regular fa-eye" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>Visibility</span><strong id="visibility">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="visibility">能见度</span><strong id="visibility">--</strong></span>
                     </div>
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>Pressure</span><strong id="pressure">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="pressure">气压</span><strong id="pressure">--</strong></span>
                     </div>
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-solid fa-temperature-half" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>Feels like</span><strong id="feelsLike">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="feelsLike">体感温度</span><strong id="feelsLike">--</strong></span>
                     </div>
                     <div class="metric-item">
                         <span class="metric-icon"><i class="fa-solid fa-sun" aria-hidden="true"></i></span>
-                        <span class="metric-copy"><span>UV index</span><strong id="uvIndex">--</strong></span>
+                        <span class="metric-copy"><span data-i18n="uvIndex">紫外线指数</span><strong id="uvIndex">--</strong></span>
                     </div>
                 </div>
             </section>
@@ -109,29 +123,29 @@
             <section id="hourlySection" class="glass-panel forecast-section" aria-labelledby="hourlyHeading">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">At a glance</p>
-                        <h2 id="hourlyHeading">Hourly forecast</h2>
+                        <p class="eyebrow" data-i18n="atAGlance">即时预报</p>
+                        <h2 id="hourlyHeading" data-i18n="hourlyForecast">逐小时预报</h2>
                     </div>
                     <i class="fa-regular fa-clock section-icon" aria-hidden="true"></i>
                 </div>
-                <div id="hourlyForecast" class="forecast-strip" aria-label="Hourly forecast"></div>
+                <div id="hourlyForecast" class="forecast-strip" aria-label="逐小时预报" data-i18n-aria-label="hourlyForecast"></div>
             </section>
 
             <section id="dailySection" class="glass-panel forecast-section" aria-labelledby="dailyHeading">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">Week ahead</p>
-                        <h2 id="dailyHeading">7-day forecast</h2>
+                        <p class="eyebrow" data-i18n="weekAhead">未来一周</p>
+                        <h2 id="dailyHeading" data-i18n="dailyForecast">7 天预报</h2>
                     </div>
                     <i class="fa-regular fa-calendar-days section-icon" aria-hidden="true"></i>
                 </div>
-                <div id="dailyForecast" class="forecast-strip" aria-label="Seven-day forecast"></div>
+                <div id="dailyForecast" class="forecast-strip" aria-label="7 天预报" data-i18n-aria-label="dailyForecast"></div>
             </section>
         </div>
 
         <footer class="footer">
-            <span id="timezoneLabel">Local forecast</span>
-            <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Weather data by Open-Meteo</a>
+            <span id="timezoneLabel">当地预报</span>
+            <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" data-i18n="dataAttribution">天气数据由 Open-Meteo 提供</a>
         </footer>
     </main>
 
