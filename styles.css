@@ -56,7 +56,8 @@ button, input { font: inherit; }
 button { cursor: pointer; }
 a { color: inherit; }
 
-.atmosphere { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.atmosphere { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.page-shell { position: relative; z-index: 1; }
 .orb { position: absolute; border-radius: 50%; filter: blur(1px); opacity: 0.58; }
 .orb-one { width: 42rem; height: 42rem; top: -26rem; right: -10rem; background: radial-gradient(circle, rgba(68, 103, 179, 0.55), transparent 67%); }
 .orb-two { width: 35rem; height: 35rem; bottom: -24rem; left: -10rem; background: radial-gradient(circle, rgba(18, 73, 143, 0.38), transparent 68%); }
@@ -64,6 +65,36 @@ a { color: inherit; }
 .star-one { top: 12%; left: 9%; }
 .star-two { top: 28%; right: 8%; opacity: 0.55; }
 .star-three { bottom: 19%; left: 24%; width: 2px; height: 2px; opacity: 0.45; }
+
+.weather-particles { position: absolute; inset: 0; overflow: hidden; }
+.weather-particle { position: absolute; top: var(--top); left: var(--left); opacity: var(--opacity); will-change: transform, opacity; }
+
+/* Gentle sunlight glints for clear conditions. */
+.particle--clear { width: 5px; height: 5px; border-radius: 50%; background: #ffe3a3; box-shadow: 0 0 12px 4px rgba(255, 204, 110, 0.3); animation: sun-glint var(--duration) ease-in-out var(--delay) infinite; }
+@keyframes sun-glint {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(calc(var(--scale) * 0.75)); opacity: 0.12; }
+    50% { transform: translate3d(var(--drift), -16px, 0) scale(var(--scale)); opacity: var(--opacity); }
+}
+
+/* Broad, soft cloud layers move slowly in cloudy weather. */
+.particle--cloud { width: clamp(140px, 22vw, 340px); height: clamp(36px, 6vw, 78px); border-radius: 999px; background: radial-gradient(ellipse at center, rgba(213, 228, 255, 0.15), rgba(180, 203, 241, 0.035) 63%, transparent 74%); filter: blur(8px); animation: cloud-drift calc(var(--duration) * 3) ease-in-out var(--delay) infinite alternate; }
+@keyframes cloud-drift { from { transform: translate3d(calc(var(--drift) * -1), 0, 0) scale(var(--scale)); } to { transform: translate3d(var(--drift), 16px, 0) scale(var(--scale)); } }
+
+/* Rain is deliberately thin and translucent so it does not compete with the forecast. */
+.particle--rain { width: 1.5px; height: 26px; border-radius: 99px; background: linear-gradient(to bottom, rgba(222, 238, 255, 0), rgba(201, 223, 255, 0.78)); transform: rotate(16deg); animation: rainfall var(--duration) linear var(--delay) infinite; }
+@keyframes rainfall { from { transform: translate3d(calc(var(--drift) * -0.18), -28vh, 0) rotate(16deg) scaleY(var(--scale)); } to { transform: translate3d(var(--drift), 112vh, 0) rotate(16deg) scaleY(var(--scale)); } }
+
+/* Snow floats downward at a slower speed than rain. */
+.particle--snow { width: 6px; height: 6px; border-radius: 50%; background: rgba(247, 252, 255, 0.92); box-shadow: 0 0 9px rgba(235, 247, 255, 0.68); animation: snowfall calc(var(--duration) * 1.7) linear var(--delay) infinite; }
+@keyframes snowfall { from { transform: translate3d(0, -12vh, 0) scale(var(--scale)); } 50% { transform: translate3d(calc(var(--drift) * 0.28), 46vh, 0) scale(var(--scale)); } to { transform: translate3d(var(--drift), 112vh, 0) scale(var(--scale)); } }
+
+/* Fog consists of sparse, semi-transparent bands. */
+.particle--fog { width: clamp(220px, 43vw, 650px); height: 78px; border-radius: 999px; background: radial-gradient(ellipse at center, rgba(221, 234, 255, 0.16), rgba(193, 211, 242, 0.035) 64%, transparent 75%); filter: blur(15px); animation: fog-drift calc(var(--duration) * 3.8) ease-in-out var(--delay) infinite alternate; }
+@keyframes fog-drift { from { transform: translate3d(calc(var(--drift) * -1), 0, 0) scaleX(var(--scale)); } to { transform: translate3d(var(--drift), 8px, 0) scaleX(var(--scale)); } }
+
+/* Storms combine rain with one rare, short lightning pulse. */
+.particle--lightning { top: 0; left: 64%; width: 2px; height: 44vh; background: linear-gradient(to bottom, transparent, rgba(255, 246, 202, 0.95) 42%, transparent 86%); box-shadow: 0 0 22px 6px rgba(191, 217, 255, 0.48); transform: skewX(-10deg); animation: lightning-flash 8s steps(1, end) var(--delay) infinite; }
+@keyframes lightning-flash { 0%, 4%, 6%, 100% { opacity: 0; } 4.8%, 5.2% { opacity: 0.72; } }
 
 .page-shell { width: min(1280px, calc(100% - 48px)); margin: 0 auto; padding: 34px 0 28px; }
 
@@ -185,5 +216,6 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .weather-particles { display: none; }
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

@@ -54,15 +54,68 @@ const elements = {
     uvIndex: document.getElementById('uvIndex'),
     hourlyForecast: document.getElementById('hourlyForecast'),
     dailyForecast: document.getElementById('dailyForecast'),
-    timezoneLabel: document.getElementById('timezoneLabel')
+    timezoneLabel: document.getElementById('timezoneLabel'),
+    weatherParticles: document.getElementById('weatherParticles')
 };
 
 const weatherCache = new Map();
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let currentOptions = [];
+let activeWeatherTheme = 'clear';
 
 function getWeatherMeta(code) {
     return weatherCodes[code] || { label: 'Unknown conditions', icon: 'fa-cloud', theme: 'cloud' };
 }
+
+function particleCount(theme) {
+    const compactScreen = window.matchMedia('(max-width: 700px)').matches;
+    const counts = {
+        clear: compactScreen ? 6 : 10,
+        cloud: compactScreen ? 4 : 7,
+        rain: compactScreen ? 28 : 52,
+        snow: compactScreen ? 22 : 42,
+        fog: compactScreen ? 4 : 7,
+        storm: compactScreen ? 32 : 58
+    };
+    return counts[theme] || counts.cloud;
+}
+
+function createParticle(theme, index) {
+    const particle = document.createElement('span');
+    const random = (min, max) => min + Math.random() * (max - min);
+    const style = particle.style;
+    let kind = theme;
+
+    if (theme === 'storm' && index === 0) kind = 'lightning';
+    if (theme === 'storm' && index > 0) kind = 'rain';
+
+    particle.className = `weather-particle particle--${kind}`;
+    style.setProperty('--left', `${random(-8, 105).toFixed(2)}%`);
+    style.setProperty('--top', `${random(-4, 96).toFixed(2)}%`);
+    style.setProperty('--delay', `${random(-14, 0).toFixed(2)}s`);
+    style.setProperty('--duration', `${random(4.5, 12).toFixed(2)}s`);
+    style.setProperty('--drift', `${random(-90, 100).toFixed(0)}px`);
+    style.setProperty('--scale', random(0.6, 1.35).toFixed(2));
+    style.setProperty('--opacity', random(0.28, 0.9).toFixed(2));
+    return particle;
+}
+
+function setWeatherAtmosphere(theme) {
+    activeWeatherTheme = theme;
+    document.body.dataset.weather = theme;
+    elements.weatherParticles.replaceChildren();
+
+    if (reducedMotion.matches) return;
+
+    const fragment = document.createDocumentFragment();
+    const count = particleCount(theme);
+    for (let index = 0; index < count; index += 1) {
+        fragment.append(createParticle(theme, index));
+    }
+    elements.weatherParticles.append(fragment);
+}
+
+reducedMotion.addEventListener('change', () => setWeatherAtmosphere(activeWeatherTheme));
 
 function setIcon(iconElement, iconName) {
     iconElement.className = `fa-solid ${iconName}`;
@@ -254,7 +307,7 @@ function renderHero(place, data) {
     elements.feelsLike.textContent = formatNumber(current.apparent_temperature, '°');
     elements.uvIndex.textContent = formatUV(current.uv_index);
     elements.timezoneLabel.textContent = `${data.timezone || 'Local'} time`;
-    document.body.dataset.weather = meta.theme;
+    setWeatherAtmosphere(meta.theme);
 }
 
 function createForecastCard({ time, code, temperature, details, isNow = false }) {
@@ -376,12 +429,20 @@ document.addEventListener('click', (event) => {
     if (!elements.form.contains(event.target)) closeResults();
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-    loadPlace({
-        name: 'London',
-        admin1: 'England',
-        country: 'United Kingdom',
-        latitude: 51.5085,
-        longitude: -0.1257
-    });
-});
+const defaultPlace = {
+    name: 'London',
+    admin1: 'England',
+    country: 'United Kingdom',
+    latitude: 51.5085,
+    longitude: -0.1257
+};
+
+function bootWeatherDashboard() {
+    loadPlace(defaultPlace);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootWeatherDashboard, { once: true });
+} else {
+    bootWeatherDashboard();
+}
