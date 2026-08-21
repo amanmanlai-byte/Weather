@@ -1,263 +1,387 @@
-// Weather Dashboard - Main Script
-// Uses Open-Meteo API (free, no API key required)
+const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
+const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search';
 
-const API_BASE = 'https://api.open-meteo.com/v1';
-const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1';
-
-// DOM Elements
-const searchInput = document.getElementById('searchInput');
-const searchBtn = document.getElementById('searchBtn');
-const loading = document.getElementById('loading');
-const errorMessage = document.getElementById('errorMessage');
-const mainWeather = document.getElementById('mainWeather');
-const hourlySection = document.getElementById('hourlySection');
-const dailySection = document.getElementById('dailySection');
-
-// Event Listeners
-searchBtn.addEventListener('click', handleSearch);
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleSearch();
-});
-
-// WMO Weather Code Interpretation
 const weatherCodes = {
-    0: { desc: 'Clear sky', icon: 'fas fa-sun' },
-    1: { desc: 'Mainly clear', icon: 'fas fa-cloud-sun' },
-    2: { desc: 'Partly cloudy', icon: 'fas fa-cloud' },
-    3: { desc: 'Overcast', icon: 'fas fa-cloud' },
-    45: { desc: 'Foggy', icon: 'fas fa-smog' },
-    48: { desc: 'Depositing rime fog', icon: 'fas fa-smog' },
-    51: { desc: 'Light drizzle', icon: 'fas fa-cloud-rain' },
-    53: { desc: 'Moderate drizzle', icon: 'fas fa-cloud-rain' },
-    55: { desc: 'Dense drizzle', icon: 'fas fa-cloud-rain' },
-    61: { desc: 'Slight rain', icon: 'fas fa-cloud-rain' },
-    63: { desc: 'Moderate rain', icon: 'fas fa-cloud-rain' },
-    65: { desc: 'Heavy rain', icon: 'fas fa-cloud-showers-heavy' },
-    71: { desc: 'Slight snow', icon: 'fas fa-snowflake' },
-    73: { desc: 'Moderate snow', icon: 'fas fa-snowflake' },
-    75: { desc: 'Heavy snow', icon: 'fas fa-snowflake' },
-    77: { desc: 'Snow grains', icon: 'fas fa-snowflake' },
-    80: { desc: 'Slight rain showers', icon: 'fas fa-cloud-rain' },
-    81: { desc: 'Moderate rain showers', icon: 'fas fa-cloud-showers-heavy' },
-    82: { desc: 'Violent rain showers', icon: 'fas fa-cloud-showers-heavy' },
-    85: { desc: 'Slight snow showers', icon: 'fas fa-snowflake' },
-    86: { desc: 'Heavy snow showers', icon: 'fas fa-snowflake' },
-    95: { desc: 'Thunderstorm', icon: 'fas fa-bolt' },
-    96: { desc: 'Thunderstorm with hail', icon: 'fas fa-bolt' },
-    99: { desc: 'Thunderstorm with hail', icon: 'fas fa-bolt' }
+    0: { label: 'Clear sky', icon: 'fa-sun', theme: 'clear' },
+    1: { label: 'Mainly clear', icon: 'fa-cloud-sun', theme: 'clear' },
+    2: { label: 'Partly cloudy', icon: 'fa-cloud-sun', theme: 'cloud' },
+    3: { label: 'Overcast', icon: 'fa-cloud', theme: 'cloud' },
+    45: { label: 'Foggy', icon: 'fa-smog', theme: 'fog' },
+    48: { label: 'Rime fog', icon: 'fa-smog', theme: 'fog' },
+    51: { label: 'Light drizzle', icon: 'fa-cloud-rain', theme: 'rain' },
+    53: { label: 'Moderate drizzle', icon: 'fa-cloud-rain', theme: 'rain' },
+    55: { label: 'Dense drizzle', icon: 'fa-cloud-rain', theme: 'rain' },
+    56: { label: 'Freezing drizzle', icon: 'fa-cloud-rain', theme: 'rain' },
+    57: { label: 'Freezing drizzle', icon: 'fa-cloud-rain', theme: 'rain' },
+    61: { label: 'Light rain', icon: 'fa-cloud-rain', theme: 'rain' },
+    63: { label: 'Moderate rain', icon: 'fa-cloud-showers-heavy', theme: 'rain' },
+    65: { label: 'Heavy rain', icon: 'fa-cloud-showers-heavy', theme: 'rain' },
+    66: { label: 'Freezing rain', icon: 'fa-cloud-rain', theme: 'rain' },
+    67: { label: 'Freezing rain', icon: 'fa-cloud-rain', theme: 'rain' },
+    71: { label: 'Light snow', icon: 'fa-snowflake', theme: 'snow' },
+    73: { label: 'Moderate snow', icon: 'fa-snowflake', theme: 'snow' },
+    75: { label: 'Heavy snow', icon: 'fa-snowflake', theme: 'snow' },
+    77: { label: 'Snow grains', icon: 'fa-snowflake', theme: 'snow' },
+    80: { label: 'Rain showers', icon: 'fa-cloud-rain', theme: 'rain' },
+    81: { label: 'Rain showers', icon: 'fa-cloud-showers-heavy', theme: 'rain' },
+    82: { label: 'Heavy showers', icon: 'fa-cloud-showers-heavy', theme: 'rain' },
+    85: { label: 'Snow showers', icon: 'fa-snowflake', theme: 'snow' },
+    86: { label: 'Heavy snow showers', icon: 'fa-snowflake', theme: 'snow' },
+    95: { label: 'Thunderstorm', icon: 'fa-bolt', theme: 'storm' },
+    96: { label: 'Thunderstorm with hail', icon: 'fa-bolt', theme: 'storm' },
+    99: { label: 'Thunderstorm with hail', icon: 'fa-bolt', theme: 'storm' }
 };
 
-// Search for city coordinates
-async function searchCity(cityName) {
-    try {
-        const response = await fetch(
-            `${GEOCODING_API}/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`
-        );
-        const data = await response.json();
+const elements = {
+    form: document.getElementById('searchForm'),
+    searchInput: document.getElementById('searchInput'),
+    searchButton: document.getElementById('searchBtn'),
+    searchResults: document.getElementById('searchResults'),
+    loading: document.getElementById('loading'),
+    weatherContent: document.getElementById('weatherContent'),
+    errorMessage: document.getElementById('errorMessage'),
+    statusMessage: document.getElementById('statusMessage'),
+    cityName: document.getElementById('cityName'),
+    dateTime: document.getElementById('dateTime'),
+    temperature: document.getElementById('temperature'),
+    weatherDescription: document.getElementById('weatherDescription'),
+    weatherIcon: document.getElementById('weatherIcon'),
+    humidity: document.getElementById('humidity'),
+    windSpeed: document.getElementById('windSpeed'),
+    visibility: document.getElementById('visibility'),
+    pressure: document.getElementById('pressure'),
+    feelsLike: document.getElementById('feelsLike'),
+    uvIndex: document.getElementById('uvIndex'),
+    hourlyForecast: document.getElementById('hourlyForecast'),
+    dailyForecast: document.getElementById('dailyForecast'),
+    timezoneLabel: document.getElementById('timezoneLabel')
+};
 
-        if (!data.results || data.results.length === 0) {
-            throw new Error('City not found');
-        }
+const weatherCache = new Map();
+let currentOptions = [];
 
-        return data.results[0];
-    } catch (error) {
-        throw new Error(`Failed to find city: ${error.message}`);
-    }
+function getWeatherMeta(code) {
+    return weatherCodes[code] || { label: 'Unknown conditions', icon: 'fa-cloud', theme: 'cloud' };
 }
 
-// Fetch weather data
-async function fetchWeather(latitude, longitude) {
-    try {
-        const response = await fetch(
-            `${API_BASE}/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,visibility,pressure_msl,uv_index&hourly=temperature_2m,weather_code,relative_humidity_2m,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,uv_index_max&timezone=auto`
-        );
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch weather data');
-        }
-
-        return await response.json();
-    } catch (error) {
-        throw new Error(`Weather fetch failed: ${error.message}`);
-    }
+function setIcon(iconElement, iconName) {
+    iconElement.className = `fa-solid ${iconName}`;
 }
 
-// Handle search
-async function handleSearch() {
-    const city = searchInput.value.trim();
-    
-    if (!city) {
-        showError('Please enter a city name');
-        return;
-    }
-
-    await loadWeather(city);
+function formatNumber(value, suffix = '') {
+    return Number.isFinite(value) ? `${Math.round(value)}${suffix}` : '—';
 }
 
-// Main weather loading function
-async function loadWeather(cityName) {
-    try {
-        showLoading(true);
-        hideError();
-        hideAllWeather();
-
-        // Get city coordinates
-        const cityData = await searchCity(cityName);
-        const { latitude, longitude, name, country, admin1 } = cityData;
-
-        // Fetch weather data
-        const weatherData = await fetchWeather(latitude, longitude);
-
-        // Display results
-        displayCurrentWeather(weatherData, name, country, admin1);
-        displayHourlyForecast(weatherData);
-        displayDailyForecast(weatherData);
-
-        showLoading(false);
-        mainWeather.classList.remove('hidden');
-        hourlySection.classList.remove('hidden');
-        dailySection.classList.remove('hidden');
-    } catch (error) {
-        showLoading(false);
-        showError(error.message);
-    }
+function formatUV(value) {
+    if (!Number.isFinite(value)) return '—';
+    let label = 'Low';
+    if (value >= 11) label = 'Extreme';
+    else if (value >= 8) label = 'Very high';
+    else if (value >= 6) label = 'High';
+    else if (value >= 3) label = 'Moderate';
+    return `${Math.round(value)} ${label}`;
 }
 
-// Display current weather
-function displayCurrentWeather(data, cityName, country, admin1) {
-    const current = data.current;
-    const timezone = data.timezone;
-
-    // Update location
-    document.getElementById('cityName').textContent = `${cityName}, ${admin1 || country}`;
-    
-    // Update date/time
-    const now = new Date();
-    document.getElementById('dateTime').textContent = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-
-    // Update temperature
-    document.getElementById('temperature').textContent = Math.round(current.temperature_2m);
-
-    // Update weather icon and description
-    const weatherInfo = weatherCodes[current.weather_code] || { desc: 'Unknown', icon: 'fas fa-question' };
-    document.getElementById('weatherIcon').className = weatherInfo.icon;
-    document.getElementById('weatherDescription').textContent = weatherInfo.desc;
-
-    // Update details
-    document.getElementById('humidity').textContent = `${current.relative_humidity_2m}%`;
-    document.getElementById('windSpeed').textContent = `${Math.round(current.wind_speed_10m)} km/h`;
-    document.getElementById('visibility').textContent = `${(current.visibility / 1000).toFixed(1)} km`;
-    document.getElementById('pressure').textContent = `${Math.round(current.pressure_msl)} mb`;
-    document.getElementById('feelsLike').textContent = `${Math.round(current.apparent_temperature)}°C`;
-    document.getElementById('uvIndex').textContent = getUVIndex(current.uv_index);
+function formatDate(dateTimeString) {
+    const date = dateTimeString.slice(0, 10);
+    return new Intl.DateTimeFormat('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'
+    }).format(new Date(`${date}T12:00:00Z`));
 }
 
-// Get UV Index description
-function getUVIndex(index) {
-    if (index < 2) return `${index} (Low)`;
-    if (index < 5) return `${index} (Moderate)`;
-    if (index < 7) return `${index} (High)`;
-    if (index < 10) return `${index} (Very High)`;
-    return `${index} (Extreme)`;
+function formatDay(dateString) {
+    return new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short', timeZone: 'UTC'
+    }).format(new Date(`${dateString}T12:00:00Z`));
 }
 
-// Display hourly forecast
-function displayHourlyForecast(data) {
-    const hourly = data.hourly;
-    const times = hourly.time;
-    const temps = hourly.temperature_2m;
-    const codes = hourly.weather_code;
-    const humidity = hourly.relative_humidity_2m;
-    const precipitation = hourly.precipitation_probability;
-
-    const forecastContainer = document.getElementById('hourlyForecast');
-    forecastContainer.innerHTML = '';
-
-    // Show next 24 hours
-    for (let i = 0; i < 24; i++) {
-        const time = new Date(times[i]);
-        const hour = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const weatherInfo = weatherCodes[codes[i]] || { desc: 'Unknown', icon: 'fas fa-question' };
-
-        const card = document.createElement('div');
-        card.className = 'forecast-card';
-        card.innerHTML = `
-            <div class="forecast-time">${hour}</div>
-            <i class="forecast-icon ${weatherInfo.icon}"></i>
-            <div class="forecast-temp">${Math.round(temps[i])}°C</div>
-            <div class="forecast-desc">${weatherInfo.desc}</div>
-            <div class="forecast-details">
-                💧 ${humidity[i]}% | ☔ ${precipitation[i]}%
-            </div>
-        `;
-        forecastContainer.appendChild(card);
-    }
+function formatHour(dateTimeString) {
+    const [hour, minute] = dateTimeString.slice(11).split(':').map(Number);
+    if (hour === 0 && minute === 0) return '12 AM';
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    return `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, '0')}` : ''} ${suffix}`;
 }
 
-// Display daily forecast
-function displayDailyForecast(data) {
-    const daily = data.daily;
-    const dates = daily.time;
-    const tempMax = daily.temperature_2m_max;
-    const tempMin = daily.temperature_2m_min;
-    const codes = daily.weather_code;
-    const windSpeed = daily.wind_speed_10m_max;
-    const precipitation = daily.precipitation_sum;
-
-    const forecastContainer = document.getElementById('dailyForecast');
-    forecastContainer.innerHTML = '';
-
-    // Show 7 days
-    for (let i = 0; i < Math.min(7, dates.length); i++) {
-        const date = new Date(dates[i]);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const weatherInfo = weatherCodes[codes[i]] || { desc: 'Unknown', icon: 'fas fa-question' };
-
-        const card = document.createElement('div');
-        card.className = 'forecast-card';
-        card.innerHTML = `
-            <div class="forecast-time">${dayName}</div>
-            <i class="forecast-icon ${weatherInfo.icon}"></i>
-            <div class="forecast-temp">${Math.round(tempMax[i])}° / ${Math.round(tempMin[i])}°</div>
-            <div class="forecast-desc">${weatherInfo.desc}</div>
-            <div class="forecast-details">
-                💨 ${Math.round(windSpeed[i])} km/h | 💧 ${Math.round(precipitation[i])} mm
-            </div>
-        `;
-        forecastContainer.appendChild(card);
-    }
+function locationText(place) {
+    const region = place.admin1 || place.country;
+    return region ? `${place.name}, ${region}` : place.name;
 }
 
-// Utility functions
-function showLoading(show) {
-    if (show) {
-        loading.classList.remove('hidden');
-    } else {
-        loading.classList.add('hidden');
-    }
+function setLoading(isLoading, message = 'Finding your forecast…') {
+    elements.loading.classList.toggle('hidden', !isLoading);
+    elements.loading.querySelector('p').textContent = message;
+    elements.searchButton.disabled = isLoading;
+    elements.searchButton.setAttribute('aria-busy', String(isLoading));
 }
 
 function showError(message) {
-    errorMessage.textContent = `❌ ${message}`;
-    errorMessage.classList.remove('hidden');
+    elements.errorMessage.textContent = message;
+    elements.errorMessage.classList.remove('hidden');
 }
 
-function hideError() {
-    errorMessage.classList.add('hidden');
+function clearError() {
+    elements.errorMessage.classList.add('hidden');
+    elements.errorMessage.textContent = '';
 }
 
-function hideAllWeather() {
-    mainWeather.classList.add('hidden');
-    hourlySection.classList.add('hidden');
-    dailySection.classList.add('hidden');
+function showStatus(message) {
+    elements.statusMessage.textContent = message;
+    elements.statusMessage.classList.remove('hidden');
 }
 
-// Load default city on page load
-window.addEventListener('load', () => {
-    loadWeather('London');
+function clearStatus() {
+    elements.statusMessage.classList.add('hidden');
+    elements.statusMessage.textContent = '';
+}
+
+function closeResults() {
+    currentOptions = [];
+    elements.searchResults.replaceChildren();
+    elements.searchResults.classList.add('hidden');
+    elements.searchInput.setAttribute('aria-expanded', 'false');
+}
+
+function createTextElement(tagName, className, text) {
+    const element = document.createElement(tagName);
+    element.className = className;
+    element.textContent = text;
+    return element;
+}
+
+function displayCityOptions(options) {
+    currentOptions = options;
+    elements.searchResults.replaceChildren();
+
+    options.forEach((place, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'search-option';
+        button.setAttribute('role', 'option');
+        button.setAttribute('id', `city-option-${index}`);
+        button.setAttribute('aria-selected', 'false');
+
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-location-dot';
+        icon.setAttribute('aria-hidden', 'true');
+
+        const copy = document.createElement('span');
+        const title = document.createElement('strong');
+        title.textContent = place.name;
+        const details = document.createElement('span');
+        details.textContent = [place.admin1, place.country].filter(Boolean).join(', ') || 'Location';
+        copy.append(title, details);
+        button.append(icon, copy);
+        button.addEventListener('click', () => loadPlace(place));
+        elements.searchResults.append(button);
+    });
+
+    elements.searchResults.classList.remove('hidden');
+    elements.searchInput.setAttribute('aria-expanded', 'true');
+}
+
+async function findCities(query) {
+    const url = new URL(GEOCODING_API);
+    url.search = new URLSearchParams({
+        name: query,
+        count: '5',
+        language: 'en',
+        format: 'json'
+    });
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('City search is currently unavailable. Please try again.');
+    const payload = await response.json();
+    return payload.results || [];
+}
+
+async function fetchWeather(place) {
+    const cacheKey = `${place.latitude},${place.longitude}`;
+    const cached = weatherCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && now - cached.savedAt < 10 * 60 * 1000) return cached.data;
+
+    const url = new URL(WEATHER_API);
+    url.search = new URLSearchParams({
+        latitude: place.latitude,
+        longitude: place.longitude,
+        timezone: 'auto',
+        forecast_days: '7',
+        current: [
+            'temperature_2m',
+            'relative_humidity_2m',
+            'apparent_temperature',
+            'weather_code',
+            'wind_speed_10m',
+            'visibility',
+            'pressure_msl',
+            'uv_index'
+        ].join(','),
+        hourly: [
+            'temperature_2m',
+            'weather_code',
+            'precipitation_probability'
+        ].join(','),
+        daily: [
+            'weather_code',
+            'temperature_2m_max',
+            'temperature_2m_min',
+            'precipitation_sum',
+            'wind_speed_10m_max',
+            'uv_index_max'
+        ].join(',')
+    });
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Weather data is temporarily unavailable. Please try again.');
+    const data = await response.json();
+    weatherCache.set(cacheKey, { data, savedAt: now });
+    return data;
+}
+
+function renderHero(place, data) {
+    const current = data.current;
+    const meta = getWeatherMeta(current.weather_code);
+
+    elements.cityName.textContent = locationText(place);
+    elements.dateTime.textContent = formatDate(current.time);
+    elements.temperature.textContent = formatNumber(current.temperature_2m);
+    elements.weatherDescription.textContent = meta.label;
+    setIcon(elements.weatherIcon, meta.icon);
+    elements.humidity.textContent = formatNumber(current.relative_humidity_2m, '%');
+    elements.windSpeed.textContent = formatNumber(current.wind_speed_10m, ' km/h');
+    elements.visibility.textContent = Number.isFinite(current.visibility) ? `${(current.visibility / 1000).toFixed(1)} km` : '—';
+    elements.pressure.textContent = formatNumber(current.pressure_msl, ' hPa');
+    elements.feelsLike.textContent = formatNumber(current.apparent_temperature, '°');
+    elements.uvIndex.textContent = formatUV(current.uv_index);
+    elements.timezoneLabel.textContent = `${data.timezone || 'Local'} time`;
+    document.body.dataset.weather = meta.theme;
+}
+
+function createForecastCard({ time, code, temperature, details, isNow = false }) {
+    const meta = getWeatherMeta(code);
+    const card = document.createElement('article');
+    card.className = `forecast-card${isNow ? ' is-now' : ''}`;
+
+    const timeElement = createTextElement('p', 'forecast-time', time);
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${meta.icon} forecast-icon`;
+    icon.setAttribute('aria-hidden', 'true');
+    const temperatureElement = createTextElement('strong', 'forecast-temp', temperature);
+    const detailsElement = createTextElement('span', 'forecast-details', details);
+    card.append(timeElement, icon, temperatureElement, detailsElement);
+    return card;
+}
+
+function renderHourly(data) {
+    const { hourly, current } = data;
+    const firstIndex = hourly.time.findIndex((time) => time >= current.time);
+    const startIndex = firstIndex >= 0 ? firstIndex : 0;
+    const fragment = document.createDocumentFragment();
+
+    for (let offset = 0; offset < 7; offset += 1) {
+        const index = startIndex + offset;
+        if (!hourly.time[index]) break;
+        const chance = hourly.precipitation_probability[index];
+        fragment.append(createForecastCard({
+            time: offset === 0 ? 'Now' : formatHour(hourly.time[index]),
+            code: hourly.weather_code[index],
+            temperature: `${formatNumber(hourly.temperature_2m[index])}°`,
+            details: Number.isFinite(chance) ? `${Math.round(chance)}% rain` : 'Forecast',
+            isNow: offset === 0
+        }));
+    }
+
+    elements.hourlyForecast.replaceChildren(fragment);
+}
+
+function renderDaily(data) {
+    const { daily } = data;
+    const fragment = document.createDocumentFragment();
+
+    daily.time.slice(0, 7).forEach((date, index) => {
+        const rain = daily.precipitation_sum[index];
+        fragment.append(createForecastCard({
+            time: index === 0 ? 'Today' : formatDay(date),
+            code: daily.weather_code[index],
+            temperature: `${formatNumber(daily.temperature_2m_max[index])}° / ${formatNumber(daily.temperature_2m_min[index])}°`,
+            details: Number.isFinite(rain) ? `${Math.round(rain)} mm` : 'Forecast'
+        }));
+    });
+
+    elements.dailyForecast.replaceChildren(fragment);
+}
+
+async function loadPlace(place) {
+    closeResults();
+    clearError();
+    clearStatus();
+    setLoading(true, `Loading ${place.name}'s forecast…`);
+
+    try {
+        const data = await fetchWeather(place);
+        renderHero(place, data);
+        renderHourly(data);
+        renderDaily(data);
+        elements.weatherContent.classList.remove('hidden');
+        elements.searchInput.value = place.name;
+    } catch (error) {
+        showError(error instanceof Error ? error.message : 'Unable to load the weather right now.');
+    } finally {
+        setLoading(false);
+    }
+}
+
+async function handleSearch(event) {
+    event.preventDefault();
+    const query = elements.searchInput.value.trim();
+    closeResults();
+    clearError();
+
+    if (query.length < 2) {
+        showError('Enter at least two characters to search for a city.');
+        return;
+    }
+
+    setLoading(true, 'Searching for cities…');
+    try {
+        const cities = await findCities(query);
+        if (cities.length === 0) {
+            showError('No matching city was found. Try adding a country or region.');
+            return;
+        }
+
+        if (cities.length === 1) {
+            await loadPlace(cities[0]);
+            return;
+        }
+
+        setLoading(false);
+        showStatus('Choose the matching city to view its forecast.');
+        displayCityOptions(cities);
+    } catch (error) {
+        showError(error instanceof Error ? error.message : 'Unable to search for a city.');
+    } finally {
+        setLoading(false);
+    }
+}
+
+elements.form.addEventListener('submit', handleSearch);
+elements.searchInput.addEventListener('input', () => {
+    clearError();
+    clearStatus();
+    if (!elements.searchResults.classList.contains('hidden')) closeResults();
+});
+
+document.addEventListener('click', (event) => {
+    if (!elements.form.contains(event.target)) closeResults();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    loadPlace({
+        name: 'London',
+        admin1: 'England',
+        country: 'United Kingdom',
+        latitude: 51.5085,
+        longitude: -0.1257
+    });
 });

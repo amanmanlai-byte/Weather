@@ -3,93 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard</title>
+    <meta name="theme-color" content="#091a38">
+    <meta name="description" content="A glassmorphism weather dashboard powered by Open-Meteo.">
+    <title>Weather — Glass Forecast</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-cloud-sun"></i> Weather Dashboard</h1>
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    placeholder="Search city (e.g., London, Tokyo, New York)..."
+<body data-weather="clear">
+    <div class="atmosphere" aria-hidden="true">
+        <span class="orb orb-one"></span>
+        <span class="orb orb-two"></span>
+        <span class="star star-one"></span>
+        <span class="star star-two"></span>
+        <span class="star star-three"></span>
+    </div>
+
+    <main class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="./" aria-label="Weather home">
+                <span class="brand-mark"><i class="fa-solid fa-cloud-sun"></i></span>
+                <span>Weather</span>
+            </a>
+
+            <form id="searchForm" class="search-form" role="search" novalidate>
+                <label class="sr-only" for="searchInput">Search for a city</label>
+                <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                <input
+                    id="searchInput"
+                    name="city"
+                    type="search"
+                    placeholder="Search a city"
                     autocomplete="off"
+                    spellcheck="false"
+                    aria-autocomplete="list"
+                    aria-controls="searchResults"
+                    aria-expanded="false"
                 >
-                <button id="searchBtn"><i class="fas fa-search"></i></button>
-            </div>
+                <button id="searchBtn" type="submit" aria-label="Search">
+                    <span>Search</span>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+                <div id="searchResults" class="search-results hidden" role="listbox" aria-label="City suggestions"></div>
+            </form>
         </header>
 
-        <!-- Loading Spinner -->
-        <div id="loading" class="loading hidden">
-            <div class="spinner"></div>
-            <p>Loading weather data...</p>
-        </div>
+        <div id="statusMessage" class="status-message hidden" role="status" aria-live="polite"></div>
+        <div id="errorMessage" class="error-message hidden" role="alert"></div>
 
-        <!-- Error Message -->
-        <div id="errorMessage" class="error-message hidden"></div>
+        <section id="loading" class="loading-state glass-panel" aria-live="polite">
+            <span class="loading-ring" aria-hidden="true"></span>
+            <p>Finding your forecast…</p>
+        </section>
 
-        <!-- Main Weather Display -->
-        <div id="mainWeather" class="main-weather hidden">
-            <div class="current-weather">
-                <div class="location-info">
-                    <h2 id="cityName"></h2>
-                    <p id="dateTime"></p>
-                </div>
-                <div class="weather-main">
-                    <div class="temp-display">
-                        <span id="temperature" class="temp"></span>
-                        <span class="unit">°C</span>
+        <div id="weatherContent" class="weather-content hidden">
+            <section id="mainWeather" class="glass-panel hero-card" aria-labelledby="cityName">
+                <div class="hero-main">
+                    <div class="location-copy">
+                        <p id="locationKicker" class="eyebrow">Current conditions</p>
+                        <h1 id="cityName">London, England</h1>
+                        <p id="dateTime" class="date-time"></p>
                     </div>
-                    <div class="weather-icon-large">
-                        <i id="weatherIcon" class="fas fa-cloud"></i>
+
+                    <div class="temperature-row">
+                        <div class="temperature-block">
+                            <span id="temperature" class="temperature">--</span><span class="degree">°</span>
+                            <p id="weatherDescription" class="condition">Loading</p>
+                        </div>
+                        <div class="weather-art" aria-hidden="true">
+                            <span class="weather-halo"></span>
+                            <i id="weatherIcon" class="fa-solid fa-cloud-sun"></i>
+                        </div>
                     </div>
                 </div>
-                <p id="weatherDescription" class="weather-desc"></p>
-            </div>
 
-            <div class="weather-details">
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-tint"></i> Humidity</span>
-                    <span id="humidity" class="detail-value"></span>
+                <div class="metric-grid" aria-label="Weather details">
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-solid fa-droplet" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>Humidity</span><strong id="humidity">--</strong></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-solid fa-wind" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>Wind</span><strong id="windSpeed">--</strong></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-regular fa-eye" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>Visibility</span><strong id="visibility">--</strong></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>Pressure</span><strong id="pressure">--</strong></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-solid fa-temperature-half" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>Feels like</span><strong id="feelsLike">--</strong></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon"><i class="fa-solid fa-sun" aria-hidden="true"></i></span>
+                        <span class="metric-copy"><span>UV index</span><strong id="uvIndex">--</strong></span>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-wind"></i> Wind Speed</span>
-                    <span id="windSpeed" class="detail-value"></span>
+            </section>
+
+            <section id="hourlySection" class="glass-panel forecast-section" aria-labelledby="hourlyHeading">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">At a glance</p>
+                        <h2 id="hourlyHeading">Hourly forecast</h2>
+                    </div>
+                    <i class="fa-regular fa-clock section-icon" aria-hidden="true"></i>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-eye"></i> Visibility</span>
-                    <span id="visibility" class="detail-value"></span>
+                <div id="hourlyForecast" class="forecast-strip" aria-label="Hourly forecast"></div>
+            </section>
+
+            <section id="dailySection" class="glass-panel forecast-section" aria-labelledby="dailyHeading">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Week ahead</p>
+                        <h2 id="dailyHeading">7-day forecast</h2>
+                    </div>
+                    <i class="fa-regular fa-calendar-days section-icon" aria-hidden="true"></i>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-compress"></i> Pressure</span>
-                    <span id="pressure" class="detail-value"></span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-arrow-up"></i> Feels Like</span>
-                    <span id="feelsLike" class="detail-value"></span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-sun"></i> UV Index</span>
-                    <span id="uvIndex" class="detail-value"></span>
-                </div>
-            </div>
+                <div id="dailyForecast" class="forecast-strip" aria-label="Seven-day forecast"></div>
+            </section>
         </div>
 
-        <!-- Hourly Forecast -->
-        <div id="hourlySection" class="forecast-section hidden">
-            <h3><i class="fas fa-clock"></i> Hourly Forecast</h3>
-            <div id="hourlyForecast" class="forecast-grid"></div>
-        </div>
-
-        <!-- 7-Day Forecast -->
-        <div id="dailySection" class="forecast-section hidden">
-            <h3><i class="fas fa-calendar-days"></i> 7-Day Forecast</h3>
-            <div id="dailyForecast" class="forecast-grid"></div>
-        </div>
-    </div>
+        <footer class="footer">
+            <span id="timezoneLabel">Local forecast</span>
+            <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Weather data by Open-Meteo</a>
+        </footer>
+    </main>
 
     <script src="script.js"></script>
 </body>
