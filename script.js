@@ -1,6 +1,8 @@
 const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search';
 const GEOCODING_GET_API = 'https://geocoding-api.open-meteo.com/v1/get';
+const NOMINATIM_API = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_MIN_INTERVAL_MS = 1100;
 const SEARCH_LANGUAGES = ['zh', 'en', 'ja', 'ko'];
 const countryNativeLanguages = {
     AF: 'ps', AL: 'sq', DZ: 'ar', AS: 'en', AD: 'ca', AO: 'pt', AI: 'en', AQ: 'en', AG: 'en', AR: 'es', AM: 'hy', AW: 'nl', AU: 'en', AT: 'de', AZ: 'az', BS: 'en', BH: 'ar', BD: 'bn', BB: 'en', BY: 'be', BE: 'nl', BZ: 'en', BJ: 'fr', BM: 'en', BT: 'dz', BO: 'es', BQ: 'nl', BA: 'bs', BW: 'en', BR: 'pt', IO: 'en', BN: 'ms', BG: 'bg', BF: 'fr', BI: 'rn', CV: 'pt', KH: 'km', CM: 'fr', CA: 'en', KY: 'en', CF: 'fr', TD: 'fr', CL: 'es', CN: 'zh', CX: 'en', CC: 'en', CO: 'es', KM: 'ar', CG: 'fr', CD: 'fr', CK: 'en', CR: 'es', CI: 'fr', HR: 'hr', CU: 'es', CW: 'nl', CY: 'el', CZ: 'cs', DK: 'da', DJ: 'fr', DM: 'en', DO: 'es', EC: 'es', EG: 'ar', SV: 'es', GQ: 'es', ER: 'ti', EE: 'et', SZ: 'en', ET: 'am', FK: 'en', FO: 'fo', FJ: 'en', FI: 'fi', FR: 'fr', GF: 'fr', PF: 'fr', GA: 'fr', GM: 'en', GE: 'ka', DE: 'de', GH: 'en', GI: 'en', GR: 'el', GL: 'kl', GD: 'en', GP: 'fr', GU: 'en', GT: 'es', GG: 'en', GN: 'fr', GW: 'pt', GY: 'en', HT: 'fr', HM: 'en', VA: 'it', HN: 'es', HK: 'zh', HU: 'hu', IS: 'is', IN: 'hi', ID: 'id', IR: 'fa', IQ: 'ar', IE: 'ga', IM: 'en', IL: 'he', IT: 'it', JM: 'en', JP: 'ja', JE: 'en', JO: 'ar', KZ: 'kk', KE: 'sw', KI: 'en', KP: 'ko', KR: 'ko', KW: 'ar', KG: 'ky', LA: 'lo', LV: 'lv', LB: 'ar', LS: 'en', LR: 'en', LY: 'ar', LI: 'de', LT: 'lt', LU: 'lb', MO: 'zh', MG: 'mg', MW: 'en', MY: 'ms', MV: 'dv', ML: 'fr', MT: 'mt', MH: 'en', MQ: 'fr', MR: 'ar', MU: 'en', YT: 'fr', MX: 'es', FM: 'en', MD: 'ro', MC: 'fr', MN: 'mn', ME: 'sr', MS: 'en', MA: 'ar', MZ: 'pt', MM: 'my', NA: 'en', NR: 'na', NP: 'ne', NL: 'nl', NC: 'fr', NZ: 'en', NI: 'es', NE: 'fr', NG: 'en', NU: 'en', NF: 'en', MK: 'mk', MP: 'en', NO: 'no', OM: 'ar', PK: 'ur', PW: 'en', PS: 'ar', PA: 'es', PG: 'en', PY: 'es', PE: 'es', PH: 'tl', PN: 'en', PL: 'pl', PT: 'pt', PR: 'es', QA: 'ar', RE: 'fr', RO: 'ro', RU: 'ru', RW: 'rw', BL: 'fr', SH: 'en', KN: 'en', LC: 'en', MF: 'fr', PM: 'fr', VC: 'en', WS: 'sm', SM: 'it', ST: 'pt', SA: 'ar', SN: 'fr', RS: 'sr', SC: 'fr', SL: 'en', SG: 'en', SX: 'nl', SK: 'sk', SI: 'sl', SB: 'en', SO: 'so', ZA: 'en', GS: 'en', SS: 'en', ES: 'es', LK: 'si', SD: 'ar', SR: 'nl', SJ: 'no', SE: 'sv', CH: 'de', SY: 'ar', TW: 'zh', TJ: 'tg', TZ: 'sw', TH: 'th', TL: 'pt', TG: 'fr', TK: 'en', TO: 'to', TT: 'en', TN: 'ar', TR: 'tr', TM: 'tk', TC: 'en', TV: 'en', UG: 'en', UA: 'uk', AE: 'ar', GB: 'en', US: 'en', UM: 'en', UY: 'es', UZ: 'uz', VU: 'bi', VE: 'es', VN: 'vi', VG: 'en', VI: 'en', WF: 'fr', EH: 'ar', YE: 'ar', ZM: 'en', ZW: 'en', XK: 'sq'
@@ -19,16 +21,16 @@ const locales = {
 
 const translations = {
     'zh-CN': {
-        pageTitle: '天气 — 玻璃预报', description: '由 Open-Meteo 驱动的玻璃拟态天气仪表盘。', brandHome: '天气首页', brand: '天气', languageLabel: '选择语言', themeLabel: '选择主题色', themeMidnight: '午夜蓝', themeOcean: '深海青', themeAurora: '极光紫', themeSunset: '落日暖橙', themeForest: '森林绿', searchLabel: '搜索城市', searchPlaceholder: '搜索城市', searchButton: '搜索', citySuggestions: '城市建议', currentConditions: '当前天气', loading: '正在获取天气预报…', loadingCondition: '加载中', weatherDetails: '天气详情', humidity: '湿度', wind: '风速', visibility: '能见度', pressure: '气压', feelsLike: '体感温度', uvIndex: '紫外线指数', atAGlance: '即时预报', hourlyForecast: '逐小时预报', weekAhead: '未来一周', dailyForecast: '7 天预报', localForecast: '当地预报', dataAttribution: '天气数据由 Open-Meteo 提供', now: '现在', today: '今天', rain: '降水', forecast: '预报', location: '地点', low: '低', moderate: '中等', high: '高', veryHigh: '很高', extreme: '极高', localTime: '{timezone} 当地时间', loadingForecast: '正在加载 {city} 的天气预报…', searchingCities: '正在搜索城市…', citySearchUnavailable: '暂时无法搜索城市，请稍后重试。', weatherUnavailable: '天气数据暂时不可用，请稍后重试。', unableToLoad: '暂时无法加载天气，请稍后重试。', enterTwoCharacters: '请输入至少两个字符以搜索城市。', noMatchingCity: '未找到匹配的城市，请补充国家或地区。', chooseCity: '请选择匹配的城市以查看天气预报。', unableToSearch: '暂时无法搜索城市，请稍后重试。', unitKm: ' 公里', unitKmh: ' 公里/小时', unitHpa: ' 百帕', unitMm: ' 毫米'
+        pageTitle: '天气 — 玻璃预报', description: '由 Open-Meteo 驱动的玻璃拟态天气仪表盘。', brandHome: '天气首页', brand: '天气', languageLabel: '选择语言', themeLabel: '选择主题色', themeMidnight: '午夜蓝', themeOcean: '深海青', themeAurora: '极光紫', themeSunset: '落日暖橙', themeForest: '森林绿', searchLabel: '搜索城市', searchPlaceholder: '搜索城市', searchButton: '搜索', citySuggestions: '城市建议', currentConditions: '当前天气', loading: '正在获取天气预报…', loadingCondition: '加载中', weatherDetails: '天气详情', humidity: '湿度', wind: '风速', visibility: '能见度', pressure: '气压', feelsLike: '体感温度', uvIndex: '紫外线指数', atAGlance: '即时预报', hourlyForecast: '逐小时预报', weekAhead: '未来一周', dailyForecast: '7 天预报', localForecast: '当地预报', dataAttribution: '天气数据由 Open-Meteo 提供', now: '现在', today: '今天', rain: '降水', forecast: '预报', location: '地点', low: '低', moderate: '中等', high: '高', veryHigh: '很高', extreme: '极高', localTime: '{timezone} 当地时间', loadingForecast: '正在加载 {city} 的天气预报…', searchingCities: '正在搜索城市…', citySearchUnavailable: '暂时无法搜索城市，请稍后重试。', weatherUnavailable: '天气数据暂时不可用，请稍后重试。', unableToLoad: '暂时无法加载天气，请稍后重试。', enterTwoCharacters: '请输入至少两个字符以搜索城市。', noMatchingCity: '未找到匹配的城市，请补充国家或地区。', chooseCity: '请选择匹配的地点以查看天气预报。', unableToSearch: '暂时无法搜索地点，请稍后重试。', kindAdministrative: '行政区域', kindCity: '城市或城镇', kindDistrict: '县区或街道', kindLocality: '地点', unitKm: ' 公里', unitKmh: ' 公里/小时', unitHpa: ' 百帕', unitMm: ' 毫米'
     },
     en: {
-        pageTitle: 'Weather — Glass Forecast', description: 'A glassmorphism weather dashboard powered by Open-Meteo.', brandHome: 'Weather home', brand: 'Weather', languageLabel: 'Select language', themeLabel: 'Select colour theme', themeMidnight: 'Midnight blue', themeOcean: 'Ocean teal', themeAurora: 'Aurora violet', themeSunset: 'Sunset amber', themeForest: 'Forest green', searchLabel: 'Search for a city', searchPlaceholder: 'Search a city', searchButton: 'Search', citySuggestions: 'City suggestions', currentConditions: 'Current conditions', loading: 'Finding your forecast…', loadingCondition: 'Loading', weatherDetails: 'Weather details', humidity: 'Humidity', wind: 'Wind', visibility: 'Visibility', pressure: 'Pressure', feelsLike: 'Feels like', uvIndex: 'UV index', atAGlance: 'At a glance', hourlyForecast: 'Hourly forecast', weekAhead: 'Week ahead', dailyForecast: '7-day forecast', localForecast: 'Local forecast', dataAttribution: 'Weather data by Open-Meteo', now: 'Now', today: 'Today', rain: 'rain', forecast: 'Forecast', location: 'Location', low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high', extreme: 'Extreme', localTime: '{timezone} time', loadingForecast: "Loading {city}'s forecast…", searchingCities: 'Searching for cities…', citySearchUnavailable: 'City search is currently unavailable. Please try again.', weatherUnavailable: 'Weather data is temporarily unavailable. Please try again.', unableToLoad: 'Unable to load the weather right now.', enterTwoCharacters: 'Enter at least two characters to search for a city.', noMatchingCity: 'No matching city was found. Try adding a country or region.', chooseCity: 'Choose the matching city to view its forecast.', unableToSearch: 'Unable to search for a city.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: 'Weather — Glass Forecast', description: 'A glassmorphism weather dashboard powered by Open-Meteo.', brandHome: 'Weather home', brand: 'Weather', languageLabel: 'Select language', themeLabel: 'Select colour theme', themeMidnight: 'Midnight blue', themeOcean: 'Ocean teal', themeAurora: 'Aurora violet', themeSunset: 'Sunset amber', themeForest: 'Forest green', searchLabel: 'Search for a city', searchPlaceholder: 'Search a city', searchButton: 'Search', citySuggestions: 'City suggestions', currentConditions: 'Current conditions', loading: 'Finding your forecast…', loadingCondition: 'Loading', weatherDetails: 'Weather details', humidity: 'Humidity', wind: 'Wind', visibility: 'Visibility', pressure: 'Pressure', feelsLike: 'Feels like', uvIndex: 'UV index', atAGlance: 'At a glance', hourlyForecast: 'Hourly forecast', weekAhead: 'Week ahead', dailyForecast: '7-day forecast', localForecast: 'Local forecast', dataAttribution: 'Weather data by Open-Meteo', now: 'Now', today: 'Today', rain: 'rain', forecast: 'Forecast', location: 'Location', low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high', extreme: 'Extreme', localTime: '{timezone} time', loadingForecast: "Loading {city}'s forecast…", searchingCities: 'Searching for cities…', citySearchUnavailable: 'City search is currently unavailable. Please try again.', weatherUnavailable: 'Weather data is temporarily unavailable. Please try again.', unableToLoad: 'Unable to load the weather right now.', enterTwoCharacters: 'Enter at least two characters to search for a city.', noMatchingCity: 'No matching city was found. Try adding a country or region.', chooseCity: 'Choose the matching place to view its forecast.', unableToSearch: 'Unable to search for a place.', kindAdministrative: 'Administrative area', kindCity: 'City or town', kindDistrict: 'County, district or ward', kindLocality: 'Place', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     },
     ja: {
-        pageTitle: '天気 — グラス予報', description: 'Open-Meteo を使用したグラスモーフィズムの天気ダッシュボードです。', brandHome: '天気ホーム', brand: '天気', languageLabel: '言語を選択', themeLabel: 'テーマカラーを選択', themeMidnight: 'ミッドナイトブルー', themeOcean: 'オーシャンティール', themeAurora: 'オーロラバイオレット', themeSunset: 'サンセットアンバー', themeForest: 'フォレストグリーン', searchLabel: '都市を検索', searchPlaceholder: '都市を検索', searchButton: '検索', citySuggestions: '都市の候補', currentConditions: '現在の天気', loading: '天気予報を取得中…', loadingCondition: '読み込み中', weatherDetails: '天気の詳細', humidity: '湿度', wind: '風速', visibility: '視程', pressure: '気圧', feelsLike: '体感温度', uvIndex: 'UV 指数', atAGlance: '現在の予報', hourlyForecast: '時間ごとの予報', weekAhead: '今後一週間', dailyForecast: '7 日間予報', localForecast: '現地の予報', dataAttribution: '天気データ: Open-Meteo', now: '現在', today: '今日', rain: '降水', forecast: '予報', location: '場所', low: '低い', moderate: '中程度', high: '高い', veryHigh: '非常に高い', extreme: '極端に高い', localTime: '{timezone} 現地時刻', loadingForecast: '{city} の天気予報を読み込み中…', searchingCities: '都市を検索中…', citySearchUnavailable: '都市検索は現在利用できません。もう一度お試しください。', weatherUnavailable: '天気データは一時的に利用できません。もう一度お試しください。', unableToLoad: '現在、天気を読み込めません。もう一度お試しください。', enterTwoCharacters: '都市を検索するには 2 文字以上入力してください。', noMatchingCity: '該当する都市が見つかりません。国または地域を追加してください。', chooseCity: '予報を確認する都市を選択してください。', unableToSearch: '現在、都市を検索できません。もう一度お試しください。', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: '天気 — グラス予報', description: 'Open-Meteo を使用したグラスモーフィズムの天気ダッシュボードです。', brandHome: '天気ホーム', brand: '天気', languageLabel: '言語を選択', themeLabel: 'テーマカラーを選択', themeMidnight: 'ミッドナイトブルー', themeOcean: 'オーシャンティール', themeAurora: 'オーロラバイオレット', themeSunset: 'サンセットアンバー', themeForest: 'フォレストグリーン', searchLabel: '都市を検索', searchPlaceholder: '都市を検索', searchButton: '検索', citySuggestions: '都市の候補', currentConditions: '現在の天気', loading: '天気予報を取得中…', loadingCondition: '読み込み中', weatherDetails: '天気の詳細', humidity: '湿度', wind: '風速', visibility: '視程', pressure: '気圧', feelsLike: '体感温度', uvIndex: 'UV 指数', atAGlance: '現在の予報', hourlyForecast: '時間ごとの予報', weekAhead: '今後一週間', dailyForecast: '7 日間予報', localForecast: '現地の予報', dataAttribution: '天気データ: Open-Meteo', now: '現在', today: '今日', rain: '降水', forecast: '予報', location: '場所', low: '低い', moderate: '中程度', high: '高い', veryHigh: '非常に高い', extreme: '極端に高い', localTime: '{timezone} 現地時刻', loadingForecast: '{city} の天気予報を読み込み中…', searchingCities: '都市を検索中…', citySearchUnavailable: '都市検索は現在利用できません。もう一度お試しください。', weatherUnavailable: '天気データは一時的に利用できません。もう一度お試しください。', unableToLoad: '現在、天気を読み込めません。もう一度お試しください。', enterTwoCharacters: '都市を検索するには 2 文字以上入力してください。', noMatchingCity: '該当する都市が見つかりません。国または地域を追加してください。', chooseCity: '予報を確認する場所を選択してください。', unableToSearch: '現在、場所を検索できません。もう一度お試しください。', kindAdministrative: '行政区域', kindCity: '市・町・村', kindDistrict: '郡・区・街区', kindLocality: '地点', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     },
     ko: {
-        pageTitle: '날씨 — 글래스 예보', description: 'Open-Meteo 기반의 글래스모피즘 날씨 대시보드입니다.', brandHome: '날씨 홈', brand: '날씨', languageLabel: '언어 선택', themeLabel: '테마 색상 선택', themeMidnight: '미드나이트 블루', themeOcean: '오션 틸', themeAurora: '오로라 바이올렛', themeSunset: '선셋 앰버', themeForest: '포레스트 그린', searchLabel: '도시 검색', searchPlaceholder: '도시 검색', searchButton: '검색', citySuggestions: '도시 추천', currentConditions: '현재 날씨', loading: '일기예보를 불러오는 중…', loadingCondition: '불러오는 중', weatherDetails: '날씨 정보', humidity: '습도', wind: '풍속', visibility: '가시거리', pressure: '기압', feelsLike: '체감온도', uvIndex: '자외선 지수', atAGlance: '한눈에 보기', hourlyForecast: '시간별 예보', weekAhead: '이번 주', dailyForecast: '7일 예보', localForecast: '현지 예보', dataAttribution: '날씨 데이터: Open-Meteo', now: '지금', today: '오늘', rain: '강수', forecast: '예보', location: '위치', low: '낮음', moderate: '보통', high: '높음', veryHigh: '매우 높음', extreme: '매우 위험', localTime: '{timezone} 현지 시간', loadingForecast: '{city}의 일기예보를 불러오는 중…', searchingCities: '도시를 검색하는 중…', citySearchUnavailable: '현재 도시 검색을 사용할 수 없습니다. 다시 시도해 주세요.', weatherUnavailable: '날씨 데이터를 일시적으로 사용할 수 없습니다. 다시 시도해 주세요.', unableToLoad: '지금은 날씨를 불러올 수 없습니다. 다시 시도해 주세요.', enterTwoCharacters: '도시를 검색하려면 두 글자 이상 입력하세요.', noMatchingCity: '일치하는 도시를 찾지 못했습니다. 국가 또는 지역을 추가해 보세요.', chooseCity: '예보를 볼 도시를 선택하세요.', unableToSearch: '지금은 도시를 검색할 수 없습니다. 다시 시도해 주세요.', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
+        pageTitle: '날씨 — 글래스 예보', description: 'Open-Meteo 기반의 글래스모피즘 날씨 대시보드입니다.', brandHome: '날씨 홈', brand: '날씨', languageLabel: '언어 선택', themeLabel: '테마 색상 선택', themeMidnight: '미드나이트 블루', themeOcean: '오션 틸', themeAurora: '오로라 바이올렛', themeSunset: '선셋 앰버', themeForest: '포레스트 그린', searchLabel: '도시 검색', searchPlaceholder: '도시 검색', searchButton: '검색', citySuggestions: '도시 추천', currentConditions: '현재 날씨', loading: '일기예보를 불러오는 중…', loadingCondition: '불러오는 중', weatherDetails: '날씨 정보', humidity: '습도', wind: '풍속', visibility: '가시거리', pressure: '기압', feelsLike: '체감온도', uvIndex: '자외선 지수', atAGlance: '한눈에 보기', hourlyForecast: '시간별 예보', weekAhead: '이번 주', dailyForecast: '7일 예보', localForecast: '현지 예보', dataAttribution: '날씨 데이터: Open-Meteo', now: '지금', today: '오늘', rain: '강수', forecast: '예보', location: '위치', low: '낮음', moderate: '보통', high: '높음', veryHigh: '매우 높음', extreme: '매우 위험', localTime: '{timezone} 현지 시간', loadingForecast: '{city}의 일기예보를 불러오는 중…', searchingCities: '도시를 검색하는 중…', citySearchUnavailable: '현재 도시 검색을 사용할 수 없습니다. 다시 시도해 주세요.', weatherUnavailable: '날씨 데이터를 일시적으로 사용할 수 없습니다. 다시 시도해 주세요.', unableToLoad: '지금은 날씨를 불러올 수 없습니다. 다시 시도해 주세요.', enterTwoCharacters: '도시를 검색하려면 두 글자 이상 입력하세요.', noMatchingCity: '일치하는 도시를 찾지 못했습니다. 국가 또는 지역을 추가해 보세요.', chooseCity: '예보를 볼 지역을 선택하세요.', unableToSearch: '지금은 지역을 검색할 수 없습니다. 다시 시도해 주세요.', kindAdministrative: '행정구역', kindCity: '시·읍·면', kindDistrict: '군·구·동', kindLocality: '장소', unitKm: ' km', unitKmh: ' km/h', unitHpa: ' hPa', unitMm: ' mm'
     }
 };
 
@@ -48,6 +50,8 @@ const elements = {
 const weatherCache = new Map();
 const locationDetailCache = new Map();
 const globalAliasCache = new Map();
+const administrativeSearchCache = new Map();
+let lastAdministrativeSearchAt = 0;
 const crossScriptCityAliases = {
     '东京': 'Tokyo', '東京': 'Tokyo', '도쿄': 'Tokyo', '首尔': 'Seoul', 'ソウル': 'Seoul', '서울': 'Seoul',
     '纽约': 'New York', 'ニューヨーク': 'New York', '뉴욕': 'New York', '伦敦': 'London', 'ロンドン': 'London', '런던': 'London',
@@ -209,9 +213,8 @@ async function fetchLocationDetail(id, language) {
 
     const url = new URL(GEOCODING_GET_API);
     url.search = new URLSearchParams({ id, language, format: 'json' });
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Location name lookup failed');
-    const detail = await response.json();
+    const detail = await fetchJsonWithin(url);
+    if (!detail) throw new Error('Location name lookup failed');
     locationDetailCache.set(cacheKey, detail);
     return detail;
 }
@@ -220,7 +223,17 @@ async function resolvePlacePresentation(place) {
     const interfaceLanguage = locales[currentLanguage].api;
     const nativeLanguage = getNativeLanguage(place);
     if (!place.id) {
-        return { ...place, nativeLanguage, interfaceLanguage, localizedNames: { native: place, interface: place } };
+        const searchNames = place.localizedNames?.search || {};
+        return {
+            ...place,
+            nativeLanguage,
+            interfaceLanguage,
+            localizedNames: {
+                native: searchNames[nativeLanguage] || place,
+                interface: searchNames[interfaceLanguage] || place,
+                search: searchNames
+            }
+        };
     }
 
     const requestedLanguages = [...new Set([nativeLanguage, interfaceLanguage])];
@@ -230,13 +243,22 @@ async function resolvePlacePresentation(place) {
     }));
     const localized = Object.fromEntries(details);
 
+    const searchNames = place.localizedNames?.search || {};
+    const nativePlace = localized[nativeLanguage] || searchNames[nativeLanguage] || place;
+    const fetchedInterfacePlace = localized[interfaceLanguage];
+    const searchInterfacePlace = searchNames[interfaceLanguage];
+    const interfacePlace = fetchedInterfacePlace?.name === nativePlace.name && searchInterfacePlace?.name && searchInterfacePlace.name !== nativePlace.name
+        ? searchInterfacePlace
+        : fetchedInterfacePlace || searchInterfacePlace || place;
+
     return {
         ...place,
         nativeLanguage,
         interfaceLanguage,
         localizedNames: {
-            native: localized[nativeLanguage] || place,
-            interface: localized[interfaceLanguage] || place
+            native: nativePlace,
+            interface: interfacePlace,
+            search: searchNames
         }
     };
 }
@@ -253,7 +275,8 @@ async function refreshPlacePresentation(place) {
 function setLoading(isLoading, message = t('loading')) {
     elements.loading.classList.toggle('hidden', !isLoading);
     elements.loading.querySelector('p').textContent = message;
-    elements.searchButton.disabled = isLoading;
+    // Weather loading must not prevent a user from starting a location search.
+    elements.searchButton.disabled = false;
     elements.searchButton.setAttribute('aria-busy', String(isLoading));
 }
 function showError(message) { elements.errorMessage.textContent = message; elements.errorMessage.classList.remove('hidden'); }
@@ -264,18 +287,38 @@ function closeResults() { currentOptions = []; elements.searchResults.replaceChi
 function createTextElement(tagName, className, text) { const node = document.createElement(tagName); node.className = className; node.textContent = text; return node; }
 
 function displayCityOptions(options) {
-    currentOptions = options;
+    const visibleOptions = [];
+    const visibleIdentities = new Map();
+    options.forEach((place) => {
+        const searchPlace = getDisplayPlace(place, 'search');
+        const identity = [normalizeAlias(searchPlace.name), normalizeAlias(adminPath(searchPlace))].join('|');
+        const existingIndex = visibleIdentities.get(identity);
+        if (existingIndex !== undefined) {
+            if (place.source === 'administrative' && visibleOptions[existingIndex].source !== 'administrative') visibleOptions[existingIndex] = place;
+            return;
+        }
+        visibleIdentities.set(identity, visibleOptions.length);
+        visibleOptions.push(place);
+    });
+
+    currentOptions = visibleOptions;
     elements.searchResults.replaceChildren();
-    options.forEach((place, index) => {
+    visibleOptions.forEach((place, index) => {
         const button = document.createElement('button');
         button.type = 'button'; button.className = 'search-option'; button.setAttribute('role', 'option'); button.setAttribute('id', `city-option-${index}`); button.setAttribute('aria-selected', 'false');
         const icon = document.createElement('i'); icon.className = 'fa-solid fa-location-dot'; icon.setAttribute('aria-hidden', 'true');
-        const copy = document.createElement('span');
+        const copy = document.createElement('span'); copy.className = 'search-option-copy';
         const searchPlace = getDisplayPlace(place, 'search');
-        const title = document.createElement('strong'); title.textContent = searchPlace.name;
-        const details = document.createElement('span'); details.textContent = [searchPlace.admin1, searchPlace.country].filter(Boolean).join(', ') || t('location');
+        const nativeLanguage = getNativeLanguage(place);
+        const nativePlace = place.localizedNames?.search?.[nativeLanguage] || searchPlace;
+        const title = document.createElement('strong'); title.textContent = nativePlace.name;
+        const pathSegments = adminPath(searchPlace).split(' · ');
+        if (normalizeAlias(pathSegments[0]) === normalizeAlias(searchPlace.name)) pathSegments.shift();
+        const interfaceName = nativePlace.name === searchPlace.name ? '' : `${searchPlace.name} · ${displayLanguageName(locales[currentLanguage].api)}`;
+        const details = document.createElement('span'); details.className = 'search-option-path'; details.textContent = [interfaceName, pathSegments.join(' · ')].filter(Boolean).join(' · ');
+        const badge = document.createElement('span'); badge.className = 'search-option-kind'; badge.textContent = getKindLabel(place);
         button.dataset.cityIndex = String(index);
-        copy.append(title, details); button.append(icon, copy); elements.searchResults.append(button);
+        copy.append(title, details); button.append(icon, copy, badge); elements.searchResults.append(button);
     });
     elements.searchResults.classList.remove('hidden');
     elements.searchInput.setAttribute('aria-expanded', 'true');
@@ -294,17 +337,38 @@ function handleCitySelection(event) {
     loadPlace(place);
 }
 
+async function fetchJsonWithin(url, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) return null;
+        return await response.json();
+    } catch {
+        return null;
+    } finally {
+        window.clearTimeout(timeout);
+    }
+}
+
+function isWeatherPlaceResult(place) {
+    return /^(PPL|ADM|PCL|TERR)/.test(String(place.feature_code || ''));
+}
+
 async function requestGeocodingSearch(name, language) {
     const url = new URL(GEOCODING_API);
-    url.search = new URLSearchParams({ name, count: '5', language, format: 'json' });
-    const response = await fetch(url);
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return payload.results || [];
+    url.search = new URLSearchParams({ name, count: '20', language, format: 'json' });
+    const payload = await fetchJsonWithin(url);
+    return (payload?.results || []).filter(isWeatherPlaceResult);
 }
 
 function normalizeAlias(value) {
-    return value.normalize('NFKC').toLocaleLowerCase().replace(/[\s,.'’\-]/g, '');
+    return String(value || '').normalize('NFKC').toLocaleLowerCase().replace(/[\s,.'’\-]/g, '');
+}
+
+function normalizePlaceName(value) {
+    return normalizeAlias(value)
+        .replace(/(自治州|自治县|municipality|district|county|province|borough|region|state|ward|city|town|village|[市县区盟旗镇街道郡町村県府都道시군구읍면동])/g, '');
 }
 
 function findCountryAlias(query) {
@@ -330,7 +394,7 @@ async function findGlobalAliases(query) {
     const aliases = [...new Set(aliasCandidates)].slice(0, 2);
     const results = await Promise.all(aliases.map(async (alias) => {
         try {
-            return (await requestGeocodingSearch(alias, 'en')).map((place) => ({ language: 'en', place }));
+            return (await requestGeocodingSearch(alias, 'en')).map((place) => ({ language: 'en', place, source: 'geocoding' }));
         } catch { return []; }
     }));
     const flattened = results.flat();
@@ -338,40 +402,208 @@ async function findGlobalAliases(query) {
     return flattened;
 }
 
-function mergeSearchResults(localizedResults) {
+function getAdministrativeKind(place) {
+    if (place.kind) return place.kind;
+    const code = place.feature_code || '';
+    if (/^ADM|^PCL|^TERR/.test(code)) return 'administrative';
+    if (/^PPL/.test(code)) return 'city';
+    return 'locality';
+}
+
+function getKindLabel(place) {
+    const kind = getAdministrativeKind(place);
+    return t(kind === 'district' ? 'kindDistrict' : kind === 'city' ? 'kindCity' : kind === 'administrative' ? 'kindAdministrative' : 'kindLocality');
+}
+
+function adminPath(place) {
+    return [...new Set([place.admin4, place.admin3, place.admin2, place.admin1, place.country].filter(Boolean))].join(' · ') || t('location');
+}
+
+function wait(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
+
+async function requestAdministrativeSearch(query) {
+    const cacheKey = `${locales[currentLanguage].api}:${normalizeAlias(query)}`;
+    if (administrativeSearchCache.has(cacheKey)) return administrativeSearchCache.get(cacheKey);
+
+    const delay = Math.max(0, NOMINATIM_MIN_INTERVAL_MS - (Date.now() - lastAdministrativeSearchAt));
+    if (delay) await wait(delay);
+    lastAdministrativeSearchAt = Date.now();
+
+    const url = new URL(NOMINATIM_API);
+    url.search = new URLSearchParams({ q: query, format: 'jsonv2', limit: '20', addressdetails: '1', namedetails: '1', layer: 'address', 'accept-language': locales[currentLanguage].api });
+    const records = await fetchJsonWithin(url);
+    if (!Array.isArray(records)) return [];
+
+    const places = records.map((record) => normalizeAdministrativePlace(record)).filter(Boolean);
+    administrativeSearchCache.set(cacheKey, places);
+    return places;
+}
+
+function normalizeAdministrativePlace(record) {
+    const address = record.address || {};
+    const supportedTypes = /^(administrative|city|town|village|municipality|district|county|borough|suburb|ward|locality)$/i;
+    if (record.category !== 'boundary' && !supportedTypes.test(String(record.type || record.addresstype || ''))) return null;
+    const fallbackName = record.name || address.city || address.town || address.village || address.district || address.region || address.state;
+    const latitude = Number(record.lat);
+    const longitude = Number(record.lon);
+    if (!fallbackName || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+    const countryCode = address.country_code?.toUpperCase();
+    const nativeLanguage = getNativeLanguage({ country_code: countryCode });
+    const namedetails = record.namedetails || {};
+    const nativeName = namedetails[`name:${nativeLanguage}`] || namedetails.name || fallbackName;
+    const interfaceName = namedetails[`name:${locales[currentLanguage].api}`] || fallbackName;
+    const shared = {
+        country: address.country,
+        country_code: countryCode,
+        admin1: address.state || address.province,
+        admin2: address.region || address.county || address.state_district,
+        admin3: address.city || address.town || address.village || address.municipality,
+        admin4: address.district || address.city_district || address.borough || address.suburb
+    };
+    const nativePlace = { name: nativeName, ...shared };
+    const interfacePlace = { name: interfaceName, ...shared };
+    const kindByName = /(^|\s)(county|district|ward|borough)(\s|$)|[县区旗郡읍면동군구]/iu.test(nativeName) ? 'district' : null;
+    const kind = kindByName || (address.city || address.town || address.village ? 'city' : record.category === 'boundary' || record.type === 'administrative' ? 'administrative' : 'locality');
+    return {
+        id: null,
+        externalKey: `osm:${record.place_id}`,
+        ...nativePlace,
+        latitude,
+        longitude,
+        feature_code: `OSM_${String(record.category || record.class || 'PLACE').toUpperCase()}`,
+        kind,
+        source: 'administrative',
+        importance: Number(record.importance) || 0,
+        localizedNames: { search: { [nativeLanguage]: nativePlace, [locales[currentLanguage].api]: interfacePlace } }
+    };
+}
+
+function placeScore(place, query) {
+    const normalizedQuery = normalizePlaceName(query);
+    const rawQuery = normalizeAlias(query);
+    const localizedNames = Object.values(place.localizedNames?.search || {}).map((localizedPlace) => localizedPlace.name);
+    const names = [...new Set([place.name, ...localizedNames].filter(Boolean))];
+    let score = 0;
+
+    names.forEach((field) => {
+        const rawField = normalizeAlias(field);
+        const normalizedField = normalizePlaceName(field);
+        if (rawField === rawQuery) score = Math.max(score, 260);
+        else if (normalizedQuery && normalizedField === normalizedQuery) score = Math.max(score, 230);
+        else if (normalizedQuery && normalizedField.startsWith(normalizedQuery)) score = Math.max(score, 115);
+    });
+
+    [place.admin4, place.admin3, place.admin2, place.admin1].forEach((field) => {
+        if (!field) return;
+        const rawField = normalizeAlias(field);
+        const normalizedField = normalizePlaceName(field);
+        if (rawField === rawQuery) score += 120;
+        else if (normalizedQuery && normalizedField === normalizedQuery) score += 105;
+        else if (normalizedQuery && normalizedField.startsWith(normalizedQuery)) score += 45;
+    });
+
+    const kind = getAdministrativeKind(place);
+    score += place.source === 'administrative' ? 52 : 0;
+    score += kind === 'district' ? 30 : kind === 'administrative' ? 24 : kind === 'city' ? 18 : 4;
+    score += Math.min(24, [place.admin1, place.admin2, place.admin3, place.admin4].filter(Boolean).length * 6);
+    score += Math.min(18, Math.log10((place.population || 0) + 1) * 2);
+    score += Math.min(12, (place.importance || 0) * 12);
+    return score;
+}
+
+function mergeSearchResults(localizedResults, query) {
     const merged = new Map();
-    localizedResults.forEach(({ language, place }) => {
-        const key = place.id || `${place.latitude}:${place.longitude}`;
-        const existing = merged.get(key);
+    const placeIdentities = new Map();
+    localizedResults.forEach(({ language, place, source = place.source || 'geocoding' }) => {
+        const administrativeIdentity = [place.name, place.admin4, place.admin3, place.admin2, place.admin1, place.country]
+            .map(normalizeAlias).join('|');
+        const key = place.id || place.externalKey || `${place.latitude}:${place.longitude}`;
+        const existing = merged.get(key) || placeIdentities.get(administrativeIdentity);
         if (existing) {
             existing.matches += 1;
-            existing.localizedNames.search[language] = place;
-            if (language === locales[currentLanguage].api) existing.source = place;
+            Object.assign(existing.localizedNames.search, place.localizedNames?.search || {});
+            if (!existing.localizedNames.search[language]) existing.localizedNames.search[language] = place;
+            if (source === 'administrative') existing.source = 'administrative';
+            if (language === locales[currentLanguage].api || source === 'administrative') existing.sourcePlace = place;
             return;
         }
 
-        merged.set(key, {
+        const record = {
             ...place,
-            source: place,
+            source,
+            sourcePlace: place,
             matches: 1,
-            localizedNames: { search: { [language]: place } }
-        });
+            localizedNames: place.localizedNames || { search: { [language]: place } }
+        };
+        merged.set(key, record);
+        placeIdentities.set(administrativeIdentity, record);
     });
 
-    return [...merged.values()]
-        .map((place) => ({ ...place, ...(place.localizedNames.search[locales[currentLanguage].api] || place.source) }))
-        .sort((a, b) => ((b.population || 0) - (a.population || 0)) || (b.matches - a.matches))
-        .slice(0, 5);
+    const ranked = [...merged.values()]
+        .map((place) => ({ ...place, ...(place.localizedNames.search[locales[currentLanguage].api] || place.sourcePlace), score: placeScore(place, query) }))
+        .sort((a, b) => (b.score - a.score) || ((b.population || 0) - (a.population || 0)) || (b.matches - a.matches));
+
+    const bestScore = ranked[0]?.score ?? 0;
+    // Keep close matches such as a city and its county, but reject unrelated same-name places in other regions.
+    return ranked.filter((place) => place.score >= bestScore - 70).slice(0, 6);
+}
+
+async function hydrateCandidateNames(places) {
+    return Promise.all(places.map(async (place) => {
+        if (!place.id) return place;
+        const nativeLanguage = getNativeLanguage(place);
+        const interfaceLanguage = locales[currentLanguage].api;
+        const requiredLanguages = [...new Set([nativeLanguage, interfaceLanguage])];
+        const details = await Promise.all(requiredLanguages.map(async (language) => {
+            try { return [language, await fetchLocationDetail(place.id, language)]; }
+            catch { return [language, null]; }
+        }));
+        const searchNames = { ...(place.localizedNames?.search || {}) };
+        details.forEach(([language, detail]) => {
+            if (detail?.name) searchNames[language] = detail;
+        });
+        return { ...place, localizedNames: { ...(place.localizedNames || {}), search: searchNames } };
+    }));
+}
+
+function enrichWithAdministrativeNames(results, administrativePlaces) {
+    return results.map((entry) => {
+        const nearbyAdministrativePlace = administrativePlaces.find((administrativePlace) => {
+            const sameCountry = administrativePlace.country_code && administrativePlace.country_code === entry.place.country_code;
+            return sameCountry
+                && Math.abs(administrativePlace.latitude - entry.place.latitude) < 0.035
+                && Math.abs(administrativePlace.longitude - entry.place.longitude) < 0.035;
+        });
+        if (!nearbyAdministrativePlace) return entry;
+        return {
+            ...entry,
+            place: {
+                ...entry.place,
+                localizedNames: {
+                    ...(entry.place.localizedNames || {}),
+                    search: { ...(entry.place.localizedNames?.search || {}), ...(nearbyAdministrativePlace.localizedNames?.search || {}) }
+                }
+            }
+        };
+    });
 }
 
 async function findCities(query) {
     const languageSearches = SEARCH_LANGUAGES.map(async (language) => {
         try {
-            return (await requestGeocodingSearch(query, language)).map((place) => ({ language, place }));
+            return (await requestGeocodingSearch(query, language)).map((place) => ({ language, place, source: 'geocoding' }));
         } catch { return []; }
     });
-    const [localizedResults, aliasResults] = await Promise.all([Promise.all(languageSearches), findGlobalAliases(query).catch(() => [])]);
-    return mergeSearchResults([...localizedResults.flat(), ...aliasResults]);
+    const [localizedResults, aliasResults, administrativeResults] = await Promise.all([
+        Promise.all(languageSearches),
+        findGlobalAliases(query).catch(() => []),
+        requestAdministrativeSearch(query).catch(() => [])
+    ]);
+    const normalizedAdministrativeResults = administrativeResults.map((place) => ({ language: locales[currentLanguage].api, place, source: 'administrative' }));
+    const geocodingResults = enrichWithAdministrativeNames([...localizedResults.flat(), ...aliasResults], administrativeResults);
+    const candidates = mergeSearchResults([...geocodingResults, ...normalizedAdministrativeResults], query);
+    return hydrateCandidateNames(candidates);
 }
 
 async function fetchWeather(place) {
@@ -386,9 +618,8 @@ async function fetchWeather(place) {
         hourly: 'temperature_2m,weather_code,precipitation_probability',
         daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,uv_index_max'
     });
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(t('weatherUnavailable'));
-    const data = await response.json();
+    const data = await fetchJsonWithin(url);
+    if (!data?.current) throw new Error(t('weatherUnavailable'));
     weatherCache.set(cacheKey, { data, savedAt: now });
     return data;
 }
