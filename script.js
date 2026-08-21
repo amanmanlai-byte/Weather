@@ -48,6 +48,8 @@ let currentOptions = [];
 let activeWeatherTheme = 'clear';
 let currentPlace = null;
 let currentWeatherData = null;
+let searchRequestId = 0;
+let weatherRequestId = 0;
 
 function t(key, params = {}) {
     const template = translations[currentLanguage][key] ?? translations.en[key] ?? key;
@@ -171,10 +173,24 @@ function displayCityOptions(options) {
         const copy = document.createElement('span');
         const title = document.createElement('strong'); title.textContent = place.name;
         const details = document.createElement('span'); details.textContent = [place.admin1, place.country].filter(Boolean).join(', ') || t('location');
-        copy.append(title, details); button.append(icon, copy); button.addEventListener('click', () => loadPlace(place)); elements.searchResults.append(button);
+        button.dataset.cityIndex = String(index);
+        copy.append(title, details); button.append(icon, copy); elements.searchResults.append(button);
     });
     elements.searchResults.classList.remove('hidden');
     elements.searchInput.setAttribute('aria-expanded', 'true');
+}
+
+function handleCitySelection(event) {
+    const option = event.target.closest('.search-option');
+    if (!option || !elements.searchResults.contains(option)) return;
+
+    const index = Number(option.dataset.cityIndex);
+    const place = currentOptions[index];
+    if (!place) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    loadPlace(place);
 }
 
 async function findCities(query) {
@@ -259,32 +275,48 @@ function renderDaily(data) {
 function renderWeather(place, data) { renderHero(place, data); renderHourly(data); renderDaily(data); }
 
 async function loadPlace(place) {
+    const requestId = ++weatherRequestId;
     closeResults(); clearError(); clearStatus(); setLoading(true, t('loadingForecast', { city: place.name }));
+
     try {
         const data = await fetchWeather(place);
+        if (requestId !== weatherRequestId) return;
+
         currentPlace = place; currentWeatherData = data;
         renderWeather(place, data);
         elements.weatherContent.classList.remove('hidden');
         elements.searchInput.value = place.name;
     } catch (error) {
-        showError(error instanceof Error ? error.message : t('unableToLoad'));
-    } finally { setLoading(false); }
+        if (requestId === weatherRequestId) showError(error instanceof Error ? error.message : t('unableToLoad'));
+    } finally {
+        if (requestId === weatherRequestId) setLoading(false);
+    }
 }
 
 async function handleSearch(event) {
     event.preventDefault();
     const query = elements.searchInput.value.trim();
+    const requestId = ++searchRequestId;
     closeResults(); clearError();
+
     if (query.length < 2) { showError(t('enterTwoCharacters')); return; }
     setLoading(true, t('searchingCities'));
+
     try {
         const cities = await findCities(query);
+        if (requestId !== searchRequestId) return;
+
         if (cities.length === 0) { showError(t('noMatchingCity')); return; }
         if (cities.length === 1) { await loadPlace(cities[0]); return; }
-        setLoading(false); showStatus(t('chooseCity')); displayCityOptions(cities);
+
+        setLoading(false);
+        showStatus(t('chooseCity'));
+        displayCityOptions(cities);
     } catch (error) {
-        showError(error instanceof Error ? error.message : t('unableToSearch'));
-    } finally { setLoading(false); }
+        if (requestId === searchRequestId) showError(error instanceof Error ? error.message : t('unableToSearch'));
+    } finally {
+        if (requestId === searchRequestId) setLoading(false);
+    }
 }
 
 function initializePreferences() {
@@ -298,9 +330,15 @@ function initializePreferences() {
 }
 
 elements.form.addEventListener('submit', handleSearch);
+elements.searchResults.addEventListener('click', handleCitySelection);
 elements.languageSelect.addEventListener('change', (event) => setLanguage(event.target.value));
 elements.themeSelect.addEventListener('change', (event) => setTheme(event.target.value));
-elements.searchInput.addEventListener('input', () => { clearError(); clearStatus(); if (!elements.searchResults.classList.contains('hidden')) closeResults(); });
+elements.searchInput.addEventListener('input', () => {
+    searchRequestId += 1;
+    clearError();
+    clearStatus();
+    if (!elements.searchResults.classList.contains('hidden')) closeResults();
+});
 document.addEventListener('click', (event) => { if (!elements.form.contains(event.target)) closeResults(); });
 reducedMotion.addEventListener('change', () => setWeatherAtmosphere(activeWeatherTheme));
 
