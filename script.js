@@ -1,5 +1,10 @@
 const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search';
+const GEOCODING_GET_API = 'https://geocoding-api.open-meteo.com/v1/get';
+const SEARCH_LANGUAGES = ['zh', 'en', 'ja', 'ko'];
+const countryNativeLanguages = {
+    AF: 'ps', AL: 'sq', DZ: 'ar', AS: 'en', AD: 'ca', AO: 'pt', AI: 'en', AQ: 'en', AG: 'en', AR: 'es', AM: 'hy', AW: 'nl', AU: 'en', AT: 'de', AZ: 'az', BS: 'en', BH: 'ar', BD: 'bn', BB: 'en', BY: 'be', BE: 'nl', BZ: 'en', BJ: 'fr', BM: 'en', BT: 'dz', BO: 'es', BQ: 'nl', BA: 'bs', BW: 'en', BR: 'pt', IO: 'en', BN: 'ms', BG: 'bg', BF: 'fr', BI: 'rn', CV: 'pt', KH: 'km', CM: 'fr', CA: 'en', KY: 'en', CF: 'fr', TD: 'fr', CL: 'es', CN: 'zh', CX: 'en', CC: 'en', CO: 'es', KM: 'ar', CG: 'fr', CD: 'fr', CK: 'en', CR: 'es', CI: 'fr', HR: 'hr', CU: 'es', CW: 'nl', CY: 'el', CZ: 'cs', DK: 'da', DJ: 'fr', DM: 'en', DO: 'es', EC: 'es', EG: 'ar', SV: 'es', GQ: 'es', ER: 'ti', EE: 'et', SZ: 'en', ET: 'am', FK: 'en', FO: 'fo', FJ: 'en', FI: 'fi', FR: 'fr', GF: 'fr', PF: 'fr', GA: 'fr', GM: 'en', GE: 'ka', DE: 'de', GH: 'en', GI: 'en', GR: 'el', GL: 'kl', GD: 'en', GP: 'fr', GU: 'en', GT: 'es', GG: 'en', GN: 'fr', GW: 'pt', GY: 'en', HT: 'fr', HM: 'en', VA: 'it', HN: 'es', HK: 'zh', HU: 'hu', IS: 'is', IN: 'hi', ID: 'id', IR: 'fa', IQ: 'ar', IE: 'ga', IM: 'en', IL: 'he', IT: 'it', JM: 'en', JP: 'ja', JE: 'en', JO: 'ar', KZ: 'kk', KE: 'sw', KI: 'en', KP: 'ko', KR: 'ko', KW: 'ar', KG: 'ky', LA: 'lo', LV: 'lv', LB: 'ar', LS: 'en', LR: 'en', LY: 'ar', LI: 'de', LT: 'lt', LU: 'lb', MO: 'zh', MG: 'mg', MW: 'en', MY: 'ms', MV: 'dv', ML: 'fr', MT: 'mt', MH: 'en', MQ: 'fr', MR: 'ar', MU: 'en', YT: 'fr', MX: 'es', FM: 'en', MD: 'ro', MC: 'fr', MN: 'mn', ME: 'sr', MS: 'en', MA: 'ar', MZ: 'pt', MM: 'my', NA: 'en', NR: 'na', NP: 'ne', NL: 'nl', NC: 'fr', NZ: 'en', NI: 'es', NE: 'fr', NG: 'en', NU: 'en', NF: 'en', MK: 'mk', MP: 'en', NO: 'no', OM: 'ar', PK: 'ur', PW: 'en', PS: 'ar', PA: 'es', PG: 'en', PY: 'es', PE: 'es', PH: 'tl', PN: 'en', PL: 'pl', PT: 'pt', PR: 'es', QA: 'ar', RE: 'fr', RO: 'ro', RU: 'ru', RW: 'rw', BL: 'fr', SH: 'en', KN: 'en', LC: 'en', MF: 'fr', PM: 'fr', VC: 'en', WS: 'sm', SM: 'it', ST: 'pt', SA: 'ar', SN: 'fr', RS: 'sr', SC: 'fr', SL: 'en', SG: 'en', SX: 'nl', SK: 'sk', SI: 'sl', SB: 'en', SO: 'so', ZA: 'en', GS: 'en', SS: 'en', ES: 'es', LK: 'si', SD: 'ar', SR: 'nl', SJ: 'no', SE: 'sv', CH: 'de', SY: 'ar', TW: 'zh', TJ: 'tg', TZ: 'sw', TH: 'th', TL: 'pt', TG: 'fr', TK: 'en', TO: 'to', TT: 'en', TN: 'ar', TR: 'tr', TM: 'tk', TC: 'en', TV: 'en', UG: 'en', UA: 'uk', AE: 'ar', GB: 'en', US: 'en', UM: 'en', UY: 'es', UZ: 'uz', VU: 'bi', VE: 'es', VN: 'vi', VG: 'en', VI: 'en', WF: 'fr', EH: 'ar', YE: 'ar', ZM: 'en', ZW: 'en', XK: 'sq'
+};
 const DEFAULT_LANGUAGE = 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'weather-dashboard-language';
 const THEME_STORAGE_KEY = 'weather-dashboard-theme';
@@ -37,10 +42,31 @@ const weatherCodes = {
 };
 
 const elements = {
-    form: document.getElementById('searchForm'), languageSelect: document.getElementById('languageSelect'), themeSelect: document.getElementById('themeSelect'), searchInput: document.getElementById('searchInput'), searchButton: document.getElementById('searchBtn'), searchResults: document.getElementById('searchResults'), loading: document.getElementById('loading'), weatherContent: document.getElementById('weatherContent'), errorMessage: document.getElementById('errorMessage'), statusMessage: document.getElementById('statusMessage'), cityName: document.getElementById('cityName'), dateTime: document.getElementById('dateTime'), temperature: document.getElementById('temperature'), weatherDescription: document.getElementById('weatherDescription'), weatherIcon: document.getElementById('weatherIcon'), humidity: document.getElementById('humidity'), windSpeed: document.getElementById('windSpeed'), visibility: document.getElementById('visibility'), pressure: document.getElementById('pressure'), feelsLike: document.getElementById('feelsLike'), uvIndex: document.getElementById('uvIndex'), hourlyForecast: document.getElementById('hourlyForecast'), dailyForecast: document.getElementById('dailyForecast'), timezoneLabel: document.getElementById('timezoneLabel'), weatherParticles: document.getElementById('weatherParticles')
+    form: document.getElementById('searchForm'), languageSelect: document.getElementById('languageSelect'), themeSelect: document.getElementById('themeSelect'), searchInput: document.getElementById('searchInput'), searchButton: document.getElementById('searchBtn'), searchResults: document.getElementById('searchResults'), loading: document.getElementById('loading'), weatherContent: document.getElementById('weatherContent'), errorMessage: document.getElementById('errorMessage'), statusMessage: document.getElementById('statusMessage'), cityName: document.getElementById('cityName'), localizedLocation: document.getElementById('localizedLocation'), nativeLanguageBadge: document.getElementById('nativeLanguageBadge'), dateTime: document.getElementById('dateTime'), temperature: document.getElementById('temperature'), weatherDescription: document.getElementById('weatherDescription'), weatherIcon: document.getElementById('weatherIcon'), humidity: document.getElementById('humidity'), windSpeed: document.getElementById('windSpeed'), visibility: document.getElementById('visibility'), pressure: document.getElementById('pressure'), feelsLike: document.getElementById('feelsLike'), uvIndex: document.getElementById('uvIndex'), hourlyForecast: document.getElementById('hourlyForecast'), dailyForecast: document.getElementById('dailyForecast'), timezoneLabel: document.getElementById('timezoneLabel'), weatherParticles: document.getElementById('weatherParticles')
 };
 
 const weatherCache = new Map();
+const locationDetailCache = new Map();
+const globalAliasCache = new Map();
+const crossScriptCityAliases = {
+    '东京': 'Tokyo', '東京': 'Tokyo', '도쿄': 'Tokyo', '首尔': 'Seoul', 'ソウル': 'Seoul', '서울': 'Seoul',
+    '纽约': 'New York', 'ニューヨーク': 'New York', '뉴욕': 'New York', '伦敦': 'London', 'ロンドン': 'London', '런던': 'London',
+    '巴黎': 'Paris', 'パリ': 'Paris', '파리': 'Paris', '柏林': 'Berlin', 'ベルリン': 'Berlin', '베를린': 'Berlin',
+    '罗马': 'Rome', 'ローマ': 'Rome', '로마': 'Rome', '马德里': 'Madrid', 'マドリード': 'Madrid', '마드리드': 'Madrid',
+    '莫斯科': 'Moscow', 'モスクワ': 'Moscow', '모스크바': 'Moscow', '伊斯坦布尔': 'Istanbul', 'イスタンブール': 'Istanbul', '이스탄불': 'Istanbul',
+    '开罗': 'Cairo', 'カイロ': 'Cairo', '카이로': 'Cairo', '迪拜': 'Dubai', 'ドバイ': 'Dubai', '두바이': 'Dubai',
+    '孟买': 'Mumbai', 'ムンバイ': 'Mumbai', '뭄바이': 'Mumbai', '德里': 'Delhi', 'デリー': 'Delhi', '델리': 'Delhi',
+    '曼谷': 'Bangkok', 'バンコク': 'Bangkok', '방콕': 'Bangkok', '新加坡': 'Singapore', 'シンガポール': 'Singapore', '싱가포르': 'Singapore',
+    '雅加达': 'Jakarta', 'ジャカルタ': 'Jakarta', '자카르타': 'Jakarta', '马尼拉': 'Manila', 'マニラ': 'Manila', '마닐라': 'Manila',
+    '河内': 'Hanoi', 'ハノイ': 'Hanoi', '하노이': 'Hanoi', '胡志明市': 'Ho Chi Minh City', 'ホーチミン': 'Ho Chi Minh City', '호치민시': 'Ho Chi Minh City',
+    '吉隆坡': 'Kuala Lumpur', 'クアラルンプール': 'Kuala Lumpur', '쿠알라룸푸르': 'Kuala Lumpur', '台北': 'Taipei', 'タイペイ': 'Taipei', '타이베이': 'Taipei',
+    '香港': 'Hong Kong', 'ホンコン': 'Hong Kong', '홍콩': 'Hong Kong', '悉尼': 'Sydney', 'シドニー': 'Sydney', '시드니': 'Sydney',
+    '墨尔本': 'Melbourne', 'メルボルン': 'Melbourne', '멜버른': 'Melbourne', '洛杉矶': 'Los Angeles', 'ロサンゼルス': 'Los Angeles', '로스앤젤레스': 'Los Angeles',
+    '旧金山': 'San Francisco', 'サンフランシスコ': 'San Francisco', '샌프란시스코': 'San Francisco', '华盛顿': 'Washington', 'ワシントン': 'Washington', '워싱턴': 'Washington',
+    '芝加哥': 'Chicago', 'シカゴ': 'Chicago', '시카고': 'Chicago', '多伦多': 'Toronto', 'トロント': 'Toronto', '토론토': 'Toronto',
+    '温哥华': 'Vancouver', 'バンクーバー': 'Vancouver', '밴쿠버': 'Vancouver', '墨西哥城': 'Mexico City', 'メキシコシティ': 'Mexico City', '멕시코시티': 'Mexico City',
+    '圣保罗': 'Sao Paulo', 'サンパウロ': 'Sao Paulo', '상파울루': 'Sao Paulo', '里约热内卢': 'Rio de Janeiro', 'リオデジャネイロ': 'Rio de Janeiro', '리우데자네이루': 'Rio de Janeiro'
+};
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let currentLanguage = DEFAULT_LANGUAGE;
 let currentTheme = 'midnight';
@@ -50,6 +76,7 @@ let currentPlace = null;
 let currentWeatherData = null;
 let searchRequestId = 0;
 let weatherRequestId = 0;
+let placePresentationRequestId = 0;
 
 function t(key, params = {}) {
     const template = translations[currentLanguage][key] ?? translations.en[key] ?? key;
@@ -81,7 +108,10 @@ function setLanguage(language) {
     closeResults();
     clearError();
     clearStatus();
-    if (currentPlace && currentWeatherData) renderWeather(currentPlace, currentWeatherData);
+    if (currentPlace && currentWeatherData) {
+        renderWeather(currentPlace, currentWeatherData);
+        refreshPlacePresentation(currentPlace).catch(() => {});
+    }
 }
 
 function setTheme(theme) {
@@ -150,6 +180,76 @@ function locationText(place) {
     return region ? `${place.name}, ${region}` : place.name;
 }
 
+function displayLanguageName(language) {
+    try {
+        return new Intl.DisplayNames([getLocale()], { type: 'language' }).of(language) || language;
+    } catch { return language; }
+}
+
+function getNativeLanguage(place) {
+    return countryNativeLanguages[place.country_code] || 'en';
+}
+
+function getDisplayPlace(place, kind) {
+    if (kind === 'native') return place.localizedNames?.native || place;
+    if (kind === 'interface') return place.localizedNames?.interface || place;
+    return place.localizedNames?.search?.[locales[currentLanguage].api] || place;
+}
+
+function getPlaceLanguage(place, kind) {
+    if (kind === 'native') return place.nativeLanguage || getNativeLanguage(place);
+    if (kind === 'interface') return place.interfaceLanguage || locales[currentLanguage].api;
+    return locales[currentLanguage].api;
+}
+
+async function fetchLocationDetail(id, language) {
+    if (!id) return null;
+    const cacheKey = `${id}:${language}`;
+    if (locationDetailCache.has(cacheKey)) return locationDetailCache.get(cacheKey);
+
+    const url = new URL(GEOCODING_GET_API);
+    url.search = new URLSearchParams({ id, language, format: 'json' });
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Location name lookup failed');
+    const detail = await response.json();
+    locationDetailCache.set(cacheKey, detail);
+    return detail;
+}
+
+async function resolvePlacePresentation(place) {
+    const interfaceLanguage = locales[currentLanguage].api;
+    const nativeLanguage = getNativeLanguage(place);
+    if (!place.id) {
+        return { ...place, nativeLanguage, interfaceLanguage, localizedNames: { native: place, interface: place } };
+    }
+
+    const requestedLanguages = [...new Set([nativeLanguage, interfaceLanguage])];
+    const details = await Promise.all(requestedLanguages.map(async (language) => {
+        try { return [language, await fetchLocationDetail(place.id, language)]; }
+        catch { return [language, null]; }
+    }));
+    const localized = Object.fromEntries(details);
+
+    return {
+        ...place,
+        nativeLanguage,
+        interfaceLanguage,
+        localizedNames: {
+            native: localized[nativeLanguage] || place,
+            interface: localized[interfaceLanguage] || place
+        }
+    };
+}
+
+async function refreshPlacePresentation(place) {
+    const requestId = ++placePresentationRequestId;
+    const presentedPlace = await resolvePlacePresentation(place);
+    if (requestId !== placePresentationRequestId || currentPlace !== place || !currentWeatherData) return;
+
+    currentPlace = presentedPlace;
+    renderWeather(currentPlace, currentWeatherData);
+}
+
 function setLoading(isLoading, message = t('loading')) {
     elements.loading.classList.toggle('hidden', !isLoading);
     elements.loading.querySelector('p').textContent = message;
@@ -171,8 +271,9 @@ function displayCityOptions(options) {
         button.type = 'button'; button.className = 'search-option'; button.setAttribute('role', 'option'); button.setAttribute('id', `city-option-${index}`); button.setAttribute('aria-selected', 'false');
         const icon = document.createElement('i'); icon.className = 'fa-solid fa-location-dot'; icon.setAttribute('aria-hidden', 'true');
         const copy = document.createElement('span');
-        const title = document.createElement('strong'); title.textContent = place.name;
-        const details = document.createElement('span'); details.textContent = [place.admin1, place.country].filter(Boolean).join(', ') || t('location');
+        const searchPlace = getDisplayPlace(place, 'search');
+        const title = document.createElement('strong'); title.textContent = searchPlace.name;
+        const details = document.createElement('span'); details.textContent = [searchPlace.admin1, searchPlace.country].filter(Boolean).join(', ') || t('location');
         button.dataset.cityIndex = String(index);
         copy.append(title, details); button.append(icon, copy); elements.searchResults.append(button);
     });
@@ -193,13 +294,84 @@ function handleCitySelection(event) {
     loadPlace(place);
 }
 
-async function findCities(query) {
+async function requestGeocodingSearch(name, language) {
     const url = new URL(GEOCODING_API);
-    url.search = new URLSearchParams({ name: query, count: '5', language: locales[currentLanguage].api, format: 'json' });
+    url.search = new URLSearchParams({ name, count: '5', language, format: 'json' });
     const response = await fetch(url);
-    if (!response.ok) throw new Error(t('citySearchUnavailable'));
+    if (!response.ok) return [];
     const payload = await response.json();
     return payload.results || [];
+}
+
+function normalizeAlias(value) {
+    return value.normalize('NFKC').toLocaleLowerCase().replace(/[\s,.'’\-]/g, '');
+}
+
+function findCountryAlias(query) {
+    const normalized = normalizeAlias(query);
+    const regionCodes = Object.keys(countryNativeLanguages);
+    const searchLocales = ['zh-CN', 'en', 'ja', 'ko'];
+
+    for (const code of regionCodes) {
+        if (normalized === code.toLocaleLowerCase()) return new Intl.DisplayNames(['en'], { type: 'region' }).of(code);
+        for (const language of searchLocales) {
+            const name = new Intl.DisplayNames([language], { type: 'region' }).of(code);
+            if (name && normalizeAlias(name) === normalized) return new Intl.DisplayNames(['en'], { type: 'region' }).of(code);
+        }
+    }
+    return null;
+}
+
+async function findGlobalAliases(query) {
+    const cacheKey = normalizeAlias(query);
+    if (globalAliasCache.has(cacheKey)) return globalAliasCache.get(cacheKey);
+
+    const aliasCandidates = [crossScriptCityAliases[cacheKey], findCountryAlias(query)].filter(Boolean);
+    const aliases = [...new Set(aliasCandidates)].slice(0, 2);
+    const results = await Promise.all(aliases.map(async (alias) => {
+        try {
+            return (await requestGeocodingSearch(alias, 'en')).map((place) => ({ language: 'en', place }));
+        } catch { return []; }
+    }));
+    const flattened = results.flat();
+    globalAliasCache.set(cacheKey, flattened);
+    return flattened;
+}
+
+function mergeSearchResults(localizedResults) {
+    const merged = new Map();
+    localizedResults.forEach(({ language, place }) => {
+        const key = place.id || `${place.latitude}:${place.longitude}`;
+        const existing = merged.get(key);
+        if (existing) {
+            existing.matches += 1;
+            existing.localizedNames.search[language] = place;
+            if (language === locales[currentLanguage].api) existing.source = place;
+            return;
+        }
+
+        merged.set(key, {
+            ...place,
+            source: place,
+            matches: 1,
+            localizedNames: { search: { [language]: place } }
+        });
+    });
+
+    return [...merged.values()]
+        .map((place) => ({ ...place, ...(place.localizedNames.search[locales[currentLanguage].api] || place.source) }))
+        .sort((a, b) => ((b.population || 0) - (a.population || 0)) || (b.matches - a.matches))
+        .slice(0, 5);
+}
+
+async function findCities(query) {
+    const languageSearches = SEARCH_LANGUAGES.map(async (language) => {
+        try {
+            return (await requestGeocodingSearch(query, language)).map((place) => ({ language, place }));
+        } catch { return []; }
+    });
+    const [localizedResults, aliasResults] = await Promise.all([Promise.all(languageSearches), findGlobalAliases(query).catch(() => [])]);
+    return mergeSearchResults([...localizedResults.flat(), ...aliasResults]);
 }
 
 async function fetchWeather(place) {
@@ -224,7 +396,16 @@ async function fetchWeather(place) {
 function renderHero(place, data) {
     const current = data.current;
     const meta = getWeatherMeta(current.weather_code);
-    elements.cityName.textContent = locationText(place);
+    const nativePlace = getDisplayPlace(place, 'native');
+    const interfacePlace = getDisplayPlace(place, 'interface');
+    const nativeName = locationText(nativePlace);
+    const interfaceName = locationText(interfacePlace);
+    const nativeLanguage = getPlaceLanguage(place, 'native');
+    const interfaceLanguage = getPlaceLanguage(place, 'interface');
+
+    elements.cityName.textContent = nativeName;
+    elements.nativeLanguageBadge.textContent = displayLanguageName(nativeLanguage);
+    elements.localizedLocation.textContent = `${interfaceName} · ${displayLanguageName(interfaceLanguage)}`;
     elements.dateTime.textContent = formatDate(current.time);
     elements.temperature.textContent = formatNumber(current.temperature_2m);
     elements.weatherDescription.textContent = getConditionLabel(meta.key);
@@ -279,13 +460,13 @@ async function loadPlace(place) {
     closeResults(); clearError(); clearStatus(); setLoading(true, t('loadingForecast', { city: place.name }));
 
     try {
-        const data = await fetchWeather(place);
+        const [data, presentedPlace] = await Promise.all([fetchWeather(place), resolvePlacePresentation(place)]);
         if (requestId !== weatherRequestId) return;
 
-        currentPlace = place; currentWeatherData = data;
-        renderWeather(place, data);
+        currentPlace = presentedPlace; currentWeatherData = data;
+        renderWeather(currentPlace, data);
         elements.weatherContent.classList.remove('hidden');
-        elements.searchInput.value = place.name;
+        elements.searchInput.value = getDisplayPlace(currentPlace, 'interface').name;
     } catch (error) {
         if (requestId === weatherRequestId) showError(error instanceof Error ? error.message : t('unableToLoad'));
     } finally {
